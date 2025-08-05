@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+FileName: MultipleFiles/index.html
+FileContents: <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -166,6 +167,17 @@
     .delete-status-btn:hover {
       background: #a3154a;
     }
+
+    .status-type.walking {
+      color: #4CAF50; /* green */
+    }
+    .status-type.not-walking {
+      color: #F44336; /* red */
+    }
+    .status-type.planning-to-walk {
+      color: #FFC107; /* amber */
+    }
+
     @media (max-width: 600px) {
       .status-card {
         padding: 12px 8px 10px 8px;
@@ -301,8 +313,24 @@
       <input type="hidden" id="mapLng" />
 
       <label>
-        Walk Time:
-        <input type="time" id="walkTime" required />
+        Walk Date:
+        <input type="date" id="walkDate" required />
+      </label>
+
+      <label>
+        Start Time:
+        <input type="time" id="startTime" required />
+      </label>
+
+      <label>
+        Planned Walk Length:
+        <select id="walkDuration" required>
+          <option value="15">15 minutes</option>
+          <option value="30">30 minutes</option>
+          <option value="60">1 hour</option>
+          <option value="90">1.5 hours</option>
+          <option value="120">2 hours</option>
+        </select>
       </label>
 
       <label>
@@ -409,6 +437,7 @@
     const loadingSpinner = document.getElementById('loadingSpinner');
     let currentFilter = 'all';
     let loggedInUser = localStorage.getItem('dogWalkUser') || "Anonymous";
+    const loadedStatuses = new Map(); // key => { data, element }
 
     document.getElementById('accountInfo').textContent = `Logged in as: ${loggedInUser}`;
     document.getElementById('logoutBtn').addEventListener('click', () => {
@@ -424,28 +453,45 @@
       loadingSpinner.style.display = 'block';
 
       const username = localStorage.getItem('dogWalkUser') || "Anonymous";
+
+      // Get start time and planned duration
+      const startTimeStr = document.getElementById('startTime').value;
+      const durationMinutes = parseInt(document.getElementById('walkDuration').value);
+
+      // Check if duration is selected
+      if (!startTimeStr || isNaN(durationMinutes)) {
+        showNotification("Please select a start time and walk length.");
+        loadingSpinner.style.display = 'none';
+        return;
+      }
+
+      // Calculate end time
+      const [startHour, startMinute] = startTimeStr.split(':').map(Number);
+      const startDate = new Date();
+      startDate.setHours(startHour, startMinute);
+      startDate.setMinutes(startMinute);
+      const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
+      const endTime = endDate.toTimeString().slice(0, 5); // Format: HH:MM
+
       const data = {
         status: document.getElementById('walkingStatus').value,
         location: document.getElementById('location').value.trim(),
-        time: document.getElementById('walkTime').value,
+        date: document.getElementById('walkDate').value,
+        startTime: startTimeStr,
+        endTime: endTime,
+        duration: durationMinutes, // optional: helps you display "30 mins" later
         dogStatus: document.getElementById('dogStatus').value,
         safety: document.getElementById('safetyOptions').value,
         notes: document.getElementById('otherNotes').value.trim(),
         lat: document.getElementById('mapLat').value || null,
         lng: document.getElementById('mapLng').value || null,
         timestamp: Date.now(),
-        user: username // <-- associate with account
+        user: username
       };
 
       try {
-        if (walkForm.dataset.editKey) {
-          await set(child(statusRef, walkForm.dataset.editKey), data);
-          walkForm.dataset.editKey = '';
-          showNotification("Status updated!");
-        } else {
-          await push(statusRef, data);
-          showNotification("Status submitted successfully!");
-        }
+        await push(statusRef, data); // ✅ This is the one that submits
+        showNotification("Status submitted successfully!");
         walkForm.reset();
       } catch (error) {
         console.error('Error submitting status:', error);
@@ -504,12 +550,7 @@
 
       const isOwner = data.user === loggedInUser && loggedInUser !== "Anonymous";
 
-      let editBtn = '';
       let deleteBtn = '';
-
-      if (isOwner) {
-        editBtn = `<button class="edit-status-btn" data-key="${key}" style="float:right;background:#3a6ea5;color:#fff;border:none;border-radius:5px;padding:4px 10px;cursor:pointer;margin-right:5px;">Edit</button>`;
-      }
 
       if (isOwner || isAdmin()) {
         deleteBtn = `<button class="delete-status-btn" data-key="${key}" style="float:right;background:#c2185b;color:#fff;border:none;border-radius:5px;padding:4px 10px;cursor:pointer;">Delete</button>`;
@@ -518,14 +559,14 @@
       el.innerHTML = `
         <div class="status-card">
           <div class="status-card-header">
-            <span class="status-type">
+            <span class="status-type ${data.status.replace(/\s+/g, '-').toLowerCase()}" id="status-text-${key}">
               <i class="${getStatusIcon(data.status)} status-icon"></i> ${data.status}
             </span>
             <span class="status-user">
               <i class="fas fa-user"></i> ${data.user || "Anonymous"}
             </span>
             <div class="status-actions">
-              ${editBtn}${deleteBtn}
+              ${deleteBtn}
             </div>
           </div>
           <div class="status-card-body">
@@ -534,7 +575,9 @@
             </div>
             ${mapDiv}
             <div class="status-details-row">
-              <div><i class="far fa-clock"></i> <strong>Time:</strong> ${data.time}</div>
+              <div><i class="far fa-calendar-alt"></i> <strong>Date:</strong> ${data.date || 'N/A'}</div>
+              <div><i class="far fa-clock"></i> <strong>Start:</strong> ${data.startTime || 'N/A'}</div>
+              <div><i class="far fa-clock"></i> <strong>Predicted end time:</strong> ${data.endTime || 'N/A'}</div>
               <div><i class="fas fa-dog"></i> <strong>Dog:</strong> ${data.dogStatus}</div>
               <div><i class="fas fa-shield-alt"></i> <strong>Safety:</strong> ${data.safety}</div>
             </div>
@@ -646,11 +689,58 @@
       setTimeout(() => notif.classList.remove('show'), 3000);
     }
 
+    setInterval(() => {
+      const now = new Date();
+
+      loadedStatuses.forEach(({ data, element }, key) => {
+        const start = new Date(`${data.date}T${data.startTime}`);
+        const end = new Date(`${data.date}T${data.endTime}`);
+        const statusSpan = document.getElementById(`status-text-${key}`);
+
+        if (!statusSpan) return;
+
+        let newStatus = "not walking";
+        if (now >= start && now <= end) {
+          newStatus = "walking";
+        } else if (now > end) {
+          // Walk is over, hide status
+          element.remove();
+          loadedStatuses.delete(key);
+          applyFilter();
+          return;
+        }
+
+        // Only update if changed
+        const oldStatus = data.status;
+        if (newStatus !== oldStatus) {
+          data.status = newStatus;
+          statusSpan.className = `status-type ${newStatus.replace(/\s+/g, '-').toLowerCase()}`;
+          statusSpan.innerHTML = `<i class="${getStatusIcon(newStatus)} status-icon"></i> ${newStatus}`;
+        }
+      });
+    }, 60 * 1000); // every 60 seconds
+
+
     onChildAdded(statusRef, (snapshot) => {
       const data = snapshot.val();
       const key = snapshot.key;
+
+      const now = new Date();
+      const start = new Date(`${data.date}T${data.startTime}`);
+      const end = new Date(`${data.date}T${data.endTime}`);
+
+      if (now > end) return;
+
+      // Calculate current status
+      if (now < start) {
+        data.status = "not walking";
+      } else if (now >= start && now <= end) {
+        data.status = "walking";
+      }
+
       const el = createStatusElement(data, key);
       statusListEl.prepend(el);
+      loadedStatuses.set(key, { data, element: el }); // track for later updates
       applyFilter();
     });
 
@@ -666,27 +756,6 @@
         } catch (err) {
           showNotification("Failed to delete status.");
         }
-      }
-    });
-
-    // Edit status handler
-    statusListEl.addEventListener('click', async (e) => {
-      if (e.target.classList.contains('edit-status-btn')) {
-        const key = e.target.dataset.key;
-        // Get status data from Firebase
-        const snapshot = await get(child(statusRef, key));
-        if (!snapshot.exists()) return showNotification("Status not found.");
-        const data = snapshot.val();
-        document.getElementById('walkingStatus').value = data.status;
-        document.getElementById('location').value = data.location;
-        document.getElementById('walkTime').value = data.time;
-        document.getElementById('dogStatus').value = data.dogStatus;
-        document.getElementById('safetyOptions').value = data.safety;
-        document.getElementById('otherNotes').value = data.notes || '';
-        document.getElementById('mapLat').value = data.lat || '';
-        document.getElementById('mapLng').value = data.lng || '';
-        walkForm.dataset.editKey = key;
-        showNotification("Edit the form and submit to update your status.");
       }
     });
 
