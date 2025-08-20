@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .sidebar {
+            width: 250px; /* Adjust as needed */
+            float: left; /* Sidebar on the left */
+        }
+
+        .main-content {
+            margin-left: 260px; /* Space for sidebar */
+        }
+
+        .email-button {
+            display: inline-block;
+            padding: 10px 15px;
+            margin: 5px;
+            background-color: #007BFF; /* Example color */
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .email-button:hover {
+            background-color: #0056b3; /* Darker shade on hover */
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .sidebar {
+                width: 100%; /* Full width on small screens */
+                float: none; /* Remove float */
+            }
+            .main-content {
+                margin-left: 0; /* No margin on small screens */
+            }
+        }
+
+    </style>
+    <title>Feedback</title>
+</head>
+    <body>
+        <div id="sideMenu">
+            <h2><i class="fas fa-paw"></i> Pet Paths</h2>
+            <a href="index.html" class="active"><i class="fas fa-home"></i> Home</a>
+            <a href="map.html" class="active"><i class="fas fa-map-marker-alt"></i> Map</a>
+            <a href="feedback.html" class="active">Give Feedback!</a>
+            <div class="sidebar-theme-switcher">
+            <button id="themeSwitcherBtn" class="theme-switcher-btn" style="margin-bottom: 1rem;">
+                <i class="fas fa-palette"></i> Theme Options <i class="fas fa-chevron-down"></i>
+            </button>
+            <div id="themePopup" class="theme-popup">
+                <button class="theme-option" data-theme="default"><span class="theme-color-preview" style="background:#3a6ea5"></span> Ocean Blue</button>
+                <button class="theme-option" data-theme="high-contrast"><span class="theme-color-preview" style="background:#000; border:1px solid #fff;"></span> High Contrast</button>
+                <button class="theme-option" data-theme="forest"><span class="theme-color-preview" style="background:#2e7d32"></span> Forest Green</button>
+                <button class="theme-option" data-theme="sunset"><span class="theme-color-preview" style="background:#e65100"></span> Sunset Orange</button>
+                <button class="theme-option" data-theme="lavender"><span class="theme-color-preview" style="background:#7e57c2"></span> Lavender</button>
+                <button class="theme-option" data-theme="rose"><span class="theme-color-preview" style="background:#c2185b"></span> Rose Pink</button>
+                <button class="theme-option" data-theme="slate"><span class="theme-color-preview" style="background:#455a64"></span> Cool Slate</button>
+                <button class="theme-option" data-theme="coffee"><span class="theme-color-preview" style="background:#5d4037"></span> Coffee</button>
+                <button class="theme-option" data-theme="terminal"><span class="theme-color-preview" style="background:#00e676"></span> Terminal</button>
+            </div>
+            </div>
+            <!-- Add Account button -->
+            <button id="openAuthModal" class="theme-switcher-btn" style="margin-bottom:1rem;">
+            <i class="fas fa-user"></i> Account
+            </button>
+
+            <!-- Add to sidebar or modal -->
+            <div id="accountInfo" style="margin:1rem 0; font-weight:bold;"></div>
+            <button id="logoutBtn" class="theme-switcher-btn" style="margin-bottom:1rem;">Logout</button>
+
+            <a href="https://github.com/oliver-lebaigue-pet-paths/pet-paths" target="_blank" 
+            style="display:inline-flex; align-items:center; padding:8px 12px; background:#24292e; color:white; text-decoration:none; border-radius:6px; font-family:sans-serif;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" viewBox="0 0 16 16" style="margin-right:8px;">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 
+                7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49
+                -2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+                -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82
+                .72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07
+                -1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+                -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82
+                .64-.18 1.32-.27 2-.27s1.36.09 2 .27
+                c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12
+                .51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95
+                .29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2
+                0 .21.15.46.55.38A8.013 8.013 0 0016 8
+                c0-4.42-3.58-8-8-8z"/>
+            </svg>
+            View on GitHub
+            </a>
+        </div>
+
+        <!-- Hamburger Menu -->
+        <div id="hamburgermenu" aria-label="Toggle navigation menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <div class="main-content">
+            <center>
+                <h1><b>We Value Your Feedback!</b></h1>
+                <p>Please share your thoughts and suggestions to help us improve our services.</p>
+                <br>
+
+                <!-- Email Options -->
+                <div>
+                    <a href="https://mail.google.com/mail/?view=cm&fs=1&to=petpathsfeedback@gmail.com" class="email-button">
+                        Email via Gmail
+                    </a>
+                    <br>
+                    <a href="https://outlook.live.com/owa/?path=/mail/action/compose&to=petpathsfeedback@gmail.com" class="email-button">
+                        Email via Outlook
+                    </a>
+                    <br>
+                    <a href="https://compose.mail.yahoo.com/?to=petpathsfeedback@gmail.com" class="email-button">
+                        Email via Yahoo
+                    </a>
+                </div>
+
+                <br>
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLSdu2G3Sy30ToJL2rWNHo_mKKItRnvlRmcFv78pM2Y-q0e1jYQ/viewform?usp=header" class="active">Give Feedback!</a>
+                <br>
+            </center>
+        </div>
+    </body>
+    <script>
+        // Hamburger menu logic
+        document.getElementById('hamburgermenu').addEventListener('click', function() {
+        this.classList.toggle('active');
+        document.getElementById('sideMenu').classList.toggle('open');
+        });
+
+        // Theme switching logic
+        const themeBtn = document.getElementById('themeSwitcherBtn');
+        const themePopup = document.getElementById('themePopup');
+        const themeOptions = document.querySelectorAll('.theme-option');
+
+        themeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            themePopup.classList.toggle('show');
+        });
+
+        document.body.addEventListener('click', () => {
+            themePopup.classList.remove('show');
+        });
+
+        themePopup.addEventListener('click', (e) => {
+           e.stopPropagation();
+        });
+
+        themeOptions.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const theme = btn.dataset.theme;
+                document.body.className = '';
+                if (theme !== 'default') document.body.classList.add(theme);
+                    localStorage.setItem('dogWalkTheme', theme);
+                    themePopup.classList.remove('show');
+            });
+        });
+
+        const savedTheme = localStorage.getItem('dogWalkTheme');
+        if (savedTheme && savedTheme !== 'default') {
+            document.body.classList.add(savedTheme);
+        }
+    </script>
+</html>

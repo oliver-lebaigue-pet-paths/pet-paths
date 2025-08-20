@@ -175,6 +175,72 @@
         gap: 0.7em;
       }
     }
+
+    .styled-date {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+
+      font-family: 'Roboto', sans-serif;
+      font-size: 1em;
+      padding: 8px 12px;
+      border: 1.5px solid #ccc;
+      border-radius: 8px;
+      background-color: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+      max-width: 250px;
+    }
+
+    .styled-date:focus {
+      outline: none;
+      border-color: #3a6ea5;
+      box-shadow: 0 0 0 3px rgba(58,110,165,0.2);
+    }
+
+    .styled-date:hover {
+      border-color: #888;
+    }
+
+    /* --- Flatpickr popup custom styling --- */
+    .flatpickr-calendar {
+      border-radius: 16px !important;    /* more rounded */
+      box-shadow: 0 4px 18px rgba(0,0,0,0.15) !important;
+      border: 1.5px solid #e0e0de !important;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    /* Header (month/year bar) */
+    .flatpickr-months {
+      background: #3a6ea5 !important;
+      color: #fff !important;
+      border-radius: 16px 16px 0 0 !important;
+      padding: 6px 0 !important;
+    }
+
+    /* Arrows for month navigation */
+    .flatpickr-prev-month, .flatpickr-next-month {
+      color: #fff !important;
+      fill: #fff !important;
+    }
+
+    /* Day cells */
+    .flatpickr-day {
+      border-radius: 8px !important;
+    }
+
+    .flatpickr-day:hover {
+      background: #3a6ea5 !important;
+      color: #fff !important;
+    }
+
+    /* Selected day */
+    .flatpickr-day.selected {
+      background: #3a6ea5 !important;
+      color: #fff !important;
+      border: none !important;
+    }
   </style>
 </head>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-WXL0QKNMVG"></script>
@@ -191,7 +257,7 @@
     <a href="#" class="active"><i class="fas fa-home"></i> Home</a>
     <a href="map.html" class="active"><i class="fas fa-map-marker-alt"></i> Map</a>
     <a href="#submit-status" class="active"><i class="fas fa-plus-circle"></i> Submit Status</a>
-    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdu2G3Sy30ToJL2rWNHo_mKKItRnvlRmcFv78pM2Y-q0e1jYQ/viewform?usp=header" class="active">Give Feedback!</a>
+    <a href="feedback.html" class="active">Give Feedback!</a>
     <div class="sidebar-theme-switcher">
       <button id="themeSwitcherBtn" class="theme-switcher-btn" style="margin-bottom: 1rem;">
         <i class="fas fa-palette"></i> Theme Options <i class="fas fa-chevron-down"></i>
@@ -300,10 +366,59 @@
       <input type="hidden" id="mapLat" />
       <input type="hidden" id="mapLng" />
 
-      <label>
-        Walk Time:
-        <input type="time" id="walkTime" required />
+      <label class="form-full-width">
+        Walk Date:
+        <input type="text" id="walkDate" required class="styled-date">
+
+        <!-- Flatpickr -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+        
+        <script>
+          flatpickr("#walkDate", {
+            dateFormat: "d-m-Y",   // matches the format you had
+            defaultDate: "today"
+          });
+        </script>
       </label>
+
+      <label>
+        Start Time:
+        <input type="time" id="startTime" required />
+      </label>
+
+      <label>
+        Planned Walk Length: 
+        <input type="range" id="walkDuration" min="15" max="120" step="1" value="30">
+        <span id="durationLabel">30 minutes</span>
+      </label>
+
+      <script>
+        function updateWalkDuration(value) {
+          const durationLabel = document.getElementById('durationLabel');
+          const minutes = parseInt(value);
+          const hours = Math.floor(minutes / 60);
+          const remainingMinutes = minutes % 60;
+
+          if (hours > 0) {
+            durationLabel.textContent =
+              `${hours} hour${hours > 1 ? 's' : ''} ${remainingMinutes} minute${remainingMinutes !== 1 ? 's' : ''}`;
+          } else {
+            durationLabel.textContent =
+              `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+          }
+        }
+
+        // run once DOM is ready
+        document.addEventListener("DOMContentLoaded", () => {
+          const durationSlider = document.getElementById('walkDuration');
+          updateWalkDuration(durationSlider.value); // set initial label
+          durationSlider.addEventListener('input', (e) => {
+            updateWalkDuration(e.target.value);
+          });
+        });
+      </script>
+
 
       <label>
         Dog Status
@@ -333,6 +448,7 @@
 
       <button type="submit"><i class="fas fa-paper-plane"></i> Submit Status</button>
     </form>
+
 
     <div id="loadingSpinner" class="spinner" style="display:none;"></div>
 
@@ -427,14 +543,15 @@
       const data = {
         status: document.getElementById('walkingStatus').value,
         location: document.getElementById('location').value.trim(),
-        time: document.getElementById('walkTime').value,
+        startTime: document.getElementById('startTime').value,
+        duration: document.getElementById('walkDuration').value,  // <-- slider
         dogStatus: document.getElementById('dogStatus').value,
         safety: document.getElementById('safetyOptions').value,
         notes: document.getElementById('otherNotes').value.trim(),
         lat: document.getElementById('mapLat').value || null,
         lng: document.getElementById('mapLng').value || null,
         timestamp: Date.now(),
-        user: username // <-- associate with account
+        user: username
       };
 
       try {
@@ -515,6 +632,19 @@
         deleteBtn = `<button class="delete-status-btn" data-key="${key}" style="float:right;background:#c2185b;color:#fff;border:none;border-radius:5px;padding:4px 10px;cursor:pointer;">Delete</button>`;
       }
 
+      function calculateEndTime(startTime, durationMinutes) {
+        if (!startTime) return "";
+        const [hours, minutes] = startTime.split(":").map(Number);
+        const start = new Date();
+        start.setHours(hours, minutes, 0, 0);
+
+        const end = new Date(start.getTime() + durationMinutes * 60000);
+        const hh = String(end.getHours()).padStart(2, "0");
+        const mm = String(end.getMinutes()).padStart(2, "0");
+
+        return `${hh}:${mm}`;
+      }
+
       el.innerHTML = `
         <div class="status-card">
           <div class="status-card-header">
@@ -534,7 +664,8 @@
             </div>
             ${mapDiv}
             <div class="status-details-row">
-              <div><i class="far fa-clock"></i> <strong>Time:</strong> ${data.time}</div>
+              <div><i class="far fa-clock"></i> <strong>Start:</strong> ${data.startTime}</div>
+              <div><i class="fas fa-hourglass-end"></i> <strong>End:</strong> ${calculateEndTime(data.startTime, data.duration)}</div>
               <div><i class="fas fa-dog"></i> <strong>Dog:</strong> ${data.dogStatus}</div>
               <div><i class="fas fa-shield-alt"></i> <strong>Safety:</strong> ${data.safety}</div>
             </div>
