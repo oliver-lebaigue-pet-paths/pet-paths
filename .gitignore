@@ -1,3 +1,1 @@
-netlify
-.vercel
-node_modules
+.netlify
