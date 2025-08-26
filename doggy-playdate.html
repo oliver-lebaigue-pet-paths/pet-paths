@@ -1,0 +1,1899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#4CAF50">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Doggy Playdate Finder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+  <link rel="manifest" href="/manifest.json">
+  <style>
+    /* Re-using styles from index.html for consistency */
+    .theme-color-preview {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .filter {
+      display: flex;
+      font-size: large;
+      align-items: center;
+      gap: 0.4em;
+      padding: 4px 12px;
+      background-color: #3a6ea5;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .status-header-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+      gap: 0.5em;
+    }
+    @media (max-width: 600px) {
+      .status-header-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+      }
+      .status-header-row .filter {
+        margin-left: 0;
+        margin-top: 0.5em;
+        width: 100%;
+      }
+    }
+
+    .status-card { /* Re-purposed for playdate cards */
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(60,60,60,0.08);
+      border: 1.5px solid #e0e0de;
+      margin-bottom: 18px;
+      padding: 18px 20px 14px 20px;
+      transition: box-shadow 0.2s;
+      position: relative;
+    }
+    .status-card:hover {
+      box-shadow: 0 4px 18px rgba(60,60,60,0.16);
+    }
+    .status-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      gap: 1em;
+    }
+    .status-type { /* Re-purposed for playdate type */
+      font-size: 1.1em;
+      font-weight: 600;
+      color: #3a6ea5;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+    .status-user { /* Re-purposed for playdate host */
+      font-size: 0.95em;
+      color: #555;
+      background: #f3f3f3;
+      border-radius: 8px;
+      padding: 2px 10px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+      cursor: pointer; /* Make username clickable */
+    }
+    .status-actions {
+      display: flex;
+      gap: 0.5em;
+    }
+    .status-card-body {
+      margin-top: 6px;
+    }
+    .status-location {
+      font-size: 1em;
+      margin-bottom: 8px;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+    .status-details-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5em;
+      margin-bottom: 8px;
+      font-size: 0.98em;
+      color: #444;
+    }
+    .status-details-row > div {
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+    }
+    .status-notes {
+      background: #f8f8fa;
+      border-left: 3px solid #3a6ea5;
+      border-radius: 7px;
+      padding: 7px 12px;
+      margin-top: 8px;
+      font-size: 0.97em;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+    .status-icon { /* Re-purposed for playdate icons */
+      color: #3a6ea5;
+      margin-right: 4px;
+    }
+    .status-mini-map {
+      margin: 8px 0 8px 0;
+      border-radius: 8px;
+      border: 1px solid #e0e0de;
+      box-shadow: 0 1px 4px rgba(60,60,60,0.07);
+    }
+    .edit-status-btn, .delete-status-btn, .mark-status-btn, .interest-btn { /* Re-purposed for playdate actions */
+      font-size: 0.95em;
+      padding: 4px 12px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      margin-left: 2px;
+      margin-right: 0;
+      transition: background 0.15s;
+    }
+    .edit-status-btn {
+      background: #3a6ea5;
+      color: #fff;
+    }
+    .edit-status-btn:hover {
+      background: #24507a;
+    }
+    .delete-status-btn {
+      background: #c2185b;
+      color: #fff;
+    }
+    .delete-status-btn:hover {
+      background: #a3154a;
+    }
+    .mark-status-btn {
+      background: #FFC107; /* Amber for mark status */
+      color: #333;
+    }
+    .mark-status-btn:hover {
+      background: #e0a800;
+    }
+    .interest-btn {
+      background-color: #6c757d; /* Grey for interest button */
+      color: white;
+    }
+    .interest-btn.interested {
+      background-color: #28a745; /* Green if already interested */
+    }
+    .interest-btn:hover {
+      opacity: 0.9;
+    }
+
+    /* Specific styles for playdate types */
+    .playdate-type.casual {
+      color: #4CAF50; /* green */
+    }
+    .playdate-type.structured {
+      color: #FFC107; /* amber */
+    }
+    .playdate-type.training {
+      color: #2196F3; /* blue */
+    }
+
+    /* Playdate status styling */
+    .status-card.completed {
+      opacity: 0.7;
+      border-left: 5px solid #4CAF50; /* Green for completed */
+    }
+    .status-card.cancelled {
+      opacity: 0.5;
+      border-left: 5px solid #c2185b; /* Red for cancelled */
+      text-decoration: line-through;
+    }
+
+
+    @media (max-width: 600px) {
+      .status-card {
+        padding: 12px 8px 10px 8px;
+      }
+      .status-details-row {
+        flex-direction: column;
+        gap: 0.7em;
+      }
+    }
+
+    .styled-date {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+
+      font-family: 'Roboto', sans-serif;
+      font-size: 1em;
+      padding: 8px 12px;
+      border: 1.5px solid #ccc;
+      border-radius: 8px;
+      background-color: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+      max-width: 250px;
+    }
+
+    .styled-date:focus {
+      outline: none;
+      border-color: #3a6ea5;
+      box-shadow: 0 0 0 3px rgba(58,110,165,0.2);
+    }
+
+    .styled-date:hover {
+      border-color: #888;
+    }
+
+    /* --- Flatpickr popup custom styling --- */
+    .flatpickr-calendar {
+      border-radius: 16px !important;    /* more rounded */
+      box-shadow: 0 4px 18px rgba(0,0,0,0.15) !important;
+      border: 1.5px solid #e0e0de !important;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    /* Header (month/year bar) */
+    .flatpickr-months {
+      background: #3a6ea5 !important;
+      color: #fff !important;
+      border-radius: 16px 16px 0 0 !important;
+      padding: 6px 0 !important;
+    }
+
+    /* Arrows for month navigation */
+    .flatpickr-prev-month, .flatpickr-next-month {
+      color: #fff !important;
+      fill: #fff !important;
+    }
+
+    /* Day cells */
+    .flatpickr-day {
+      border-radius: 8px !important;
+    }
+
+    .flatpickr-day:hover {
+      background: #3a6ea5 !important;
+      color: #fff !important;
+    }
+
+    /* Selected day */
+    .flatpickr-day.selected {
+      background: #3a6ea5 !important;
+      color: #fff !important;
+      border: none !important;
+    }
+
+    /* New style for the playdate form container */
+    .playdate-form-box {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(60,60,60,0.08);
+      border: 1.5px solid #e0e0de;
+      margin-bottom: 18px;
+      padding: 18px 20px 14px 20px;
+    }
+
+    /* Chat Modal Specific Styles */
+    .chat-modal .modal-content {
+      width: 90%;
+      max-width: 500px;
+      height: 80%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-messages {
+      flex-grow: 1;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 10px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      background-color: #f9f9f9;
+    }
+
+    .chat-message {
+      margin-bottom: 8px;
+      padding: 6px 10px;
+      border-radius: 12px;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+
+    .chat-message.sent {
+      background-color: #dcf8c6; /* Light green for sent messages */
+      align-self: flex-end;
+      margin-left: auto;
+    }
+
+    .chat-message.received {
+      background-color: #e0e0e0; /* Light grey for received messages */
+      align-self: flex-start;
+      margin-right: auto;
+    }
+
+    .chat-message .sender {
+      font-weight: bold;
+      font-size: 0.8em;
+      color: #555;
+      margin-bottom: 2px;
+    }
+
+    .chat-message .timestamp {
+      font-size: 0.7em;
+      color: #888;
+      text-align: right;
+      margin-top: 2px;
+    }
+
+    .chat-input-container {
+      display: flex;
+      gap: 10px;
+    }
+
+    .chat-input-container input {
+      flex-grow: 1;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .chat-input-container button {
+      padding: 8px 15px;
+      background-color: #3a6ea5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .chat-input-container button:hover {
+      background-color: #24507a;
+    }
+
+    .chat-button {
+      background-color: #4CAF50; /* Green for chat button */
+      color: white;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9em;
+      margin-left: 5px;
+    }
+    .chat-button:hover {
+      background-color: #45a049;
+    }
+
+    /* My Chats Modal Styles */
+    .my-chats-list button {
+      display: block;
+      width: 100%;
+      padding: 10px 15px;
+      margin-bottom: 8px;
+      background-color: #f0f0f0;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      text-align: left;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      position: relative; /* For badge positioning */
+    }
+    .my-chats-list button:hover {
+      background-color: #e0e0e0;
+    }
+    .my-chats-list button:last-child {
+      margin-bottom: 0;
+    }
+    .unread-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background-color: #dc3545; /* Red */
+      color: white;
+      border-radius: 50%;
+      padding: 2px 6px;
+      font-size: 0.7em;
+      font-weight: bold;
+      min-width: 18px;
+      text-align: center;
+    }
+
+    /* User Profile Modal Styles */
+    .user-profile-modal .modal-content {
+      max-width: 400px;
+      text-align: center;
+    }
+    .user-profile-modal h3 {
+      margin-bottom: 1rem;
+      color: var(--primary-color);
+    }
+    .user-profile-modal p {
+      margin-bottom: 0.5rem;
+      font-size: 1em;
+    }
+    .user-profile-modal .profile-section {
+      background: #f8f8fa;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 1rem;
+      border: 1px solid #eee;
+    }
+    .user-profile-modal .profile-section strong {
+      color: var(--primary-color);
+    }
+    .user-profile-modal .profile-playdates-list {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: left;
+    }
+    .user-profile-modal .profile-playdates-list div {
+      padding: 5px 0;
+      border-bottom: 1px dashed #eee;
+    }
+    .user-profile-modal .profile-playdates-list div:last-child {
+      border-bottom: none;
+    }
+    .user-profile-modal .profile-playdates-list .no-playdates {
+      text-align: center;
+      color: #888;
+    }
+
+    /* Interested Users List */
+    .interested-users-list {
+      margin-top: 10px;
+      padding: 8px;
+      background-color: #f0f8ff; /* Light blue background */
+      border-radius: 8px;
+      border: 1px solid #e0eaf5;
+    }
+    .interested-users-list strong {
+      display: block;
+      margin-bottom: 5px;
+      color: #3a6ea5;
+    }
+    .interested-users-list span {
+      display: inline-block;
+      background-color: #e6f2ff;
+      border: 1px solid #cce0f5;
+      border-radius: 15px;
+      padding: 3px 8px;
+      margin: 3px;
+      font-size: 0.85em;
+      color: #555;
+    }
+    .interested-users-list .no-interest {
+      color: #888;
+      font-style: italic;
+    }
+
+    /* Notification badge for My Chats */
+    #openMyChatsModalBtn {
+      position: relative;
+    }
+    #myChatsNotificationBadge {
+      position: absolute;
+      top: 5px; /* Adjust as needed */
+      right: 5px; /* Adjust as needed */
+      background-color: #dc3545; /* Red */
+      color: white;
+      border-radius: 50%;
+      padding: 2px 6px;
+      font-size: 0.7em;
+      font-weight: bold;
+      min-width: 18px;
+      text-align: center;
+      display: none; /* Hidden by default */
+      z-index: 10;
+    }
+  </style>
+</head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WXL0QKNMVG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-WXL0QKNMVG');
+</script>
+<body>
+  <div id="sideMenu">
+    <h2><i class="fas fa-paw"></i> Pet Paths</h2>
+    <a href="index.html" class="active"><i class="fas fa-home"></i> Home</a>
+    <a href="map.html" class="active"><i class="fas fa-map-marker-alt"></i> Map</a>
+    <a href="#submit-playdate" class="active"><i class="fas fa-calendar-plus"></i> Propose Playdate</a>
+    <a href="doggy-playdate.html" class="active"><i class="fas fa-dog"></i> Doggy Playdates</a>
+    <a href="#" id="openMyChatsModalBtn">
+      <i class="fas fa-comments"></i> My Chats
+      <span id="myChatsNotificationBadge">0</span>
+    </a>
+    <a href="feedback.html" class="active">Give Feedback!</a>
+    <div class="sidebar-theme-switcher">
+      <button id="themeSwitcherBtn" class="theme-switcher-btn" style="margin-bottom: 1rem;">
+        <i class="fas fa-palette"></i> Theme Options <i class="fas fa-chevron-down"></i>
+      </button>
+      <div id="themePopup" class="theme-popup">
+        <button class="theme-option" data-theme="default"><span class="theme-color-preview" style="background:#3a6ea5"></span> Ocean Blue</button>
+        <button class="theme-option" data-theme="high-contrast"><span class="theme-color-preview" style="background:#000; border:1px solid #fff;"></span> High Contrast</button>
+        <button class="theme-option" data-theme="forest"><span class="theme-color-preview" style="background:#2e7d32"></span> Forest Green</button>
+        <button class="theme-option" data-theme="sunset"><span class="theme-color-preview" style="background:#e65100"></span> Sunset Orange</button>
+        <button class="theme-option" data-theme="lavender"><span class="theme-color-preview" style="background:#7e57c2"></span> Lavender</button>
+        <button class="theme-option" data-theme="rose"><span class="theme-color-preview" style="background:#c2185b"></span> Rose Pink</button>
+        <button class="theme-option" data-theme="slate"><span class="theme-color-preview" style="background:#455a64"></span> Cool Slate</button>
+        <button class="theme-option" data-theme="coffee"><span class="theme-color-preview" style="background:#5d4037"></span> Coffee</button>
+        <button class="theme-option" data-theme="terminal"><span class="theme-color-preview" style="background:#00e676"></span> Terminal</button>
+      </div>
+    </div>
+    <!-- Add Account button -->
+    <button id="openAuthModal" class="theme-switcher-btn" style="margin-bottom:1rem;">
+      <i class="fas fa-user"></i> Account
+    </button>
+
+    <!-- Add to sidebar or modal -->
+    <div id="accountInfo" style="margin:1rem 0; font-weight:bold;"></div>
+    <button id="logoutBtn" class="theme-switcher-btn" style="margin-bottom:1rem;">Logout</button>
+
+    <a href="https://github.com/oliver-lebaigue-pet-paths/pet-paths" target="_blank" 
+      style="display:inline-flex; align-items:center; padding:8px 12px; background:#24292e; color:white; text-decoration:none; border-radius:6px; font-family:sans-serif;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" viewBox="0 0 16 16" style="margin-right:8px;">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 
+          7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49
+          -2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+          -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82
+          .72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07
+          -1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+          -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82
+          .64-.18 1.32-.27 2-.27s1.36.09 2 .27
+          c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12
+          .51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95
+          .29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2
+          0 .21.15.46.55.38A8.013 8.013 0 0016 8
+          c0-4.42-3.58-8-8-8z"/>
+      </svg>
+      View on GitHub
+    </a>
+  </div>
+
+  <!-- Hamburger Menu -->
+  <div id="hamburgermenu" aria-label="Toggle navigation menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <div class="main-content">
+    <h1><i class="fas fa-dog"></i> Doggy Playdate Finder</h1>
+    <p>Connect with other dog owners in Narberth to arrange fun playdates for your furry friends!</p>
+
+    <!-- Registration and Login Modal (re-used from index.html) -->
+    <div id="authModal" class="modal hidden">
+      <div class="modal-content">
+        <span id="closeAuthModal" class="close">&times;</span>
+        <form id="registerForm" style="margin-bottom:1rem;">
+          <h3>Create Account</h3>
+          <input type="text" id="regUsername" placeholder="Username" required />
+          <input type="password" id="regPassword" placeholder="Password" required />
+          <button type="submit">Register</button>
+        </form>
+        <form id="loginForm">
+          <h3>Sign In</h3>
+          <input type="text" id="loginUsername" placeholder="Username" required />
+          <input type="password" id="loginPassword" placeholder="Password" required />
+          <button type="submit">Login</button>
+        </form>
+        <form id="changePasswordForm" style="margin-top:1rem;">
+          <h3>Change Password</h3>
+         <input type="password" id="newPassword" placeholder="New Password" required />
+         <button type="submit">Change Password</button>
+       </form>
+      </div>
+    </div>
+
+    <!-- Chat Modal -->
+    <div id="chatModal" class="modal hidden chat-modal">
+      <div class="modal-content">
+        <span id="closeChatModal" class="close">&times;</span>
+        <h3 id="chatHeader">Chat with </h3>
+        <div class="chat-messages" id="chatMessages">
+          <!-- Messages will be loaded here -->
+        </div>
+        <div class="chat-input-container">
+          <input type="text" id="chatInput" placeholder="Type your message..." />
+          <button id="sendMessageBtn">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Chats Modal -->
+    <div id="myChatsModal" class="modal hidden">
+      <div class="modal-content">
+        <span id="closeMyChatsModal" class="close">&times;</span>
+        <h3>My Conversations</h3>
+        <div id="myChatsList" class="my-chats-list">
+          <!-- Chat partners will be listed here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- User Profile Modal -->
+    <div id="userProfileModal" class="modal hidden user-profile-modal">
+      <div class="modal-content">
+        <span id="closeUserProfileModal" class="close">&times;</span>
+        <h3 id="profileUsername"></h3>
+        <div class="profile-section">
+          <p><strong>Dog's Social Status:</strong> <span id="profileDogSocialStatus"></span></p>
+          <p><strong>Bio:</strong> <span id="profileBio">No bio provided.</span></p>
+        </div>
+        <h4>Active Playdates:</h4>
+        <div id="profileActivePlaydates" class="profile-playdates-list">
+          <!-- Active playdates will be listed here -->
+        </div>
+      </div>
+    </div>
+
+    <div class="playdate-form-box"> <!-- New div for the form -->
+      <form id="playdateForm">
+        <label class="form-full-width">
+          Playdate Type:
+          <select id="playdateType" required>
+            <option value="casual">Casual Play</option>
+            <option value="structured">Structured Activity (e.g., fetch, agility)</option>
+            <option value="training">Training Session</option>
+          </select>
+        </label>
+
+        <label class="form-full-width">
+          Preferred Location (draw rectangle on map):
+          <input type="text" id="location" required maxlength="50" placeholder="E.g. Narberth Moor, Bloomfield Park" list="narberthLocations" />
+          <datalist id="narberthLocations">
+            <option value="Narberth Moor"></option>
+            <option value="Bloomfield Park"></option>
+            <option value="Narberth High Street"></option>
+            <option value="Narberth Castle"></option>
+            <option value="Narberth Playing Fields"></option>
+            <option value="Narberth Woods"></option>
+            <option value="Narberth Dog Park"></option>
+          </datalist>
+        </label>
+        <div id="map" style="height: 250px; border-radius: 10px; margin-bottom: 1rem;"></div>
+        <input type="hidden" id="mapLat" />
+        <input type="hidden" id="mapLng" />
+        <input type="hidden" id="currentPlaydateKey" /> <!-- Hidden field to store key for editing -->
+
+        <label class="form-full-width">
+          Playdate Date:
+          <input type="text" id="playdateDate" required class="styled-date">
+
+          <!-- Flatpickr -->
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+          <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+          
+          <script>
+            flatpickr("#playdateDate", {
+              dateFormat: "d-m-Y",
+              defaultDate: "today"
+            });
+          </script>
+        </label>
+
+        <label>
+          Start Time:
+          <input type="time" id="startTime" required />
+        </label>
+
+        <label>
+          Planned Duration: 
+          <input type="range" id="playdateDuration" min="30" max="180" step="15" value="60">
+          <span id="durationLabel">60 minutes</span>
+        </label>
+
+        <script>
+          function updatePlaydateDuration(value) {
+            const durationLabel = document.getElementById('durationLabel');
+            const minutes = parseInt(value);
+            const hours = Math.floor(minutes / 60);
+            const remainingMinutes = minutes % 60;
+
+            if (hours > 0) {
+              durationLabel.textContent =
+                `${hours} hour${hours > 1 ? 's' : ''} ${remainingMinutes} minute${remainingMinutes !== 1 ? 's' : ''}`;
+            } else {
+              durationLabel.textContent =
+                `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+            }
+          }
+
+          document.addEventListener("DOMContentLoaded", () => {
+            const durationSlider = document.getElementById('playdateDuration');
+            updatePlaydateDuration(durationSlider.value);
+            durationSlider.addEventListener('input', (e) => {
+              updatePlaydateDuration(e.target.value);
+            });
+          });
+        </script>
+
+        <label>
+          Your Dog's Social Status:
+          <select id="dogSocialStatus" required>
+            <option value="Friendly">Friendly with most dogs</option>
+            <option value="Selective">Selective with other dogs</option>
+            <option value="Shy">Shy/Nervous</option>
+            <option value="High Energy">High Energy</option>
+            <option value="Calm">Calm/Relaxed</option>
+          </select>
+        </label>
+
+        <label class="form-full-width">
+          Notes for other owners (optional):
+          <textarea id="playdateNotes" maxlength="200" placeholder="E.g., 'My dog loves to chase balls!', 'Looking for a small dog playmate.'"></textarea>
+        </label>
+
+        <button type="submit" id="proposePlaydateBtn"><i class="fas fa-calendar-plus"></i> Propose Playdate</button>
+        <button type="button" id="updatePlaydateBtn" style="display:none;"><i class="fas fa-save"></i> Update Playdate</button>
+        <button type="button" id="cancelEditBtn" style="display:none; background-color:#ccc; color:#333;"><i class="fas fa-times"></i> Cancel Edit</button>
+      </form>
+    </div> <!-- End of new div for the form -->
+
+    <div id="loadingSpinner" class="spinner" style="display:none;"></div>
+
+    <div class="status-header-row">
+      <h2 style="margin: 0;"><i class="fas fa-list-ul"></i> Proposed Doggy Playdates</h2>
+      <button id="openFilterModal" class="filter" style="margin-left:auto;">
+        <i class="fas fa-filter"></i> Filter
+      </button>
+    </div>
+
+    <!-- Filter Modal -->
+    <div id="filterModal" class="modal hidden">
+      <div class="modal-content">
+        <span id="closeFilterModal" class="close">&times;</span>
+        <h3>Filter Playdates</h3>
+        <div class="filter-controls">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="casual">Casual Play</button>
+          <button class="filter-btn" data-filter="structured">Structured Activity</button>
+          <button class="filter-btn" data-filter="training">Training Session</button>
+          <button class="filter-btn" data-filter="friendly">Friendly Dogs</button>
+          <button class="filter-btn" id="myPlaydatesBtn" data-filter="my">My Playdates</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Wrap playdate list in container with background box -->
+    <div class="status-cards-box">
+      <div id="playdateList" class="status-cards"></div>
+    </div>
+
+    <div id="emptyState" class="text-center mt-20 hidden">
+      <i class="fas fa-dog" style="font-size: 3rem; color: var(--primary-color);"></i>
+      <h3>No playdates proposed yet!</h3>
+      <p>Be the first to propose one!</p>
+    </div>
+  </div>
+
+  <div id="notification" class="notification" role="alert">
+    <i class="fas fa-check-circle"></i>
+    <span id="notifText">Playdate proposed successfully!</span>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+
+  <!-- Firebase and App Logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import {
+      getDatabase, ref, push, onChildAdded, update, child, get, set, remove, onValue, off
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMuOymY5KniYJgg51vkhcYWxXeyXAyFk0",
+      authDomain: "pet-paths.firebaseapp.com",
+      databaseURL: "https://pet-paths-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "pet-paths",
+      storageBucket: "pet-paths.firebasestorage.app",
+      messagingSenderId: "5202022310",
+      appId: "1:5202022310:web:55991fbd2be58294bfc967",
+      measurementId: "G-SW8L37HRVV"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const playdateRef = ref(db, 'narberthDoggyPlaydates');
+    const accountsRef = ref(db, 'accounts');
+    const chatsRef = ref(db, 'chats'); // New reference for chats
+
+    const playdateForm = document.getElementById('playdateForm');
+    const playdateListEl = document.getElementById('playdateList');
+    const emptyStateEl = document.getElementById('emptyState');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    let currentFilter = 'all';
+    let loggedInUser = localStorage.getItem('dogWalkUser') || "Anonymous";
+    const loadedPlaydates = new Map(); // Stores { key: { data, element } }
+
+    // Form buttons for propose/update
+    const proposePlaydateBtn = document.getElementById('proposePlaydateBtn');
+    const updatePlaydateBtn = document.getElementById('updatePlaydateBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
+    const currentPlaydateKeyInput = document.getElementById('currentPlaydateKey');
+
+    // Chat elements
+    const chatModal = document.getElementById('chatModal');
+    const closeChatModalBtn = document.getElementById('closeChatModal');
+    const chatHeader = document.getElementById('chatHeader');
+    const chatMessagesEl = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+    const sendMessageBtn = document.getElementById('sendMessageBtn');
+
+    // My Chats elements
+    const myChatsModal = document.getElementById('myChatsModal');
+    const openMyChatsModalBtn = document.getElementById('openMyChatsModalBtn');
+    const closeMyChatsModal = document.getElementById('closeMyChatsModal');
+    const myChatsList = document.getElementById('myChatsList');
+    const myChatsNotificationBadge = document.getElementById('myChatsNotificationBadge');
+
+    // User Profile elements
+    const userProfileModal = document.getElementById('userProfileModal');
+    const closeUserProfileModal = document.getElementById('closeUserProfileModal');
+    const profileUsername = document.getElementById('profileUsername');
+    const profileDogSocialStatus = document.getElementById('profileDogSocialStatus');
+    const profileBio = document.getElementById('profileBio');
+    const profileActivePlaydates = document.getElementById('profileActivePlaydates');
+
+    let currentChatPartner = null;
+    let currentChatRoomRef = null;
+    let chatListener = null; // To store the listener for removal
+    let unreadMessagesCount = 0; // Global counter for unread messages
+
+    document.getElementById('accountInfo').textContent = `Logged in as: ${loggedInUser}`;
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('dogWalkUser');
+      loggedInUser = "Anonymous";
+      document.getElementById('accountInfo').textContent = "Not logged in";
+      showNotification("Logged out.");
+      applyFilter();
+      // Hide chat button if logged out
+      document.querySelectorAll('.chat-button').forEach(btn => btn.style.display = 'none');
+      // Reset form to propose mode
+      resetPlaydateForm();
+      updateUnreadMessagesBadge(); // Clear badge on logout
+    });
+
+    // Initial check for logged in user to show/hide chat buttons
+    document.addEventListener('DOMContentLoaded', () => {
+      if (loggedInUser !== "Anonymous") {
+        // This will be handled by applyFilter when playdates are loaded
+        setupUnreadMessageListener(); // Start listening for unread messages
+      }
+    });
+
+    // Function to reset the playdate form to "Propose" mode
+    function resetPlaydateForm() {
+      playdateForm.reset();
+      proposePlaydateBtn.style.display = 'inline-block';
+      updatePlaydateBtn.style.display = 'none';
+      cancelEditBtn.style.display = 'none';
+      currentPlaydateKeyInput.value = '';
+      // Reset map drawing if any
+      if (drawnArea) {
+        drawnItems.removeLayer(drawnArea);
+        drawnArea = null;
+      }
+      document.getElementById('mapLat').value = '';
+      document.getElementById('mapLng').value = '';
+    }
+
+    // Handle form submission for both propose and update
+    playdateForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loadingSpinner.style.display = 'block';
+
+      const username = loggedInUser;
+
+      if (username === "Anonymous") {
+        showNotification("Please log in to propose/update a playdate.");
+        loadingSpinner.style.display = 'none';
+        return;
+      }
+
+      const playdateDateStr = document.getElementById('playdateDate').value;
+      const startTimeStr = document.getElementById('startTime').value;
+      const durationMinutes = parseInt(document.getElementById('playdateDuration').value);
+
+      if (!playdateDateStr || !startTimeStr || isNaN(durationMinutes)) {
+        showNotification("Please select a date, start time, and duration.");
+        loadingSpinner.style.display = 'none';
+        return;
+      }
+
+      const [day, month, year] = playdateDateStr.split('-').map(Number);
+      const [startHour, startMinute] = startTimeStr.split(':').map(Number);
+      
+      const playdateDateTime = new Date(year, month - 1, day, startHour, startMinute);
+      const endDateTime = new Date(playdateDateTime.getTime() + durationMinutes * 60000);
+      const endTime = endDateTime.toTimeString().slice(0, 5);
+
+      const data = {
+        type: document.getElementById('playdateType').value,
+        location: document.getElementById('location').value.trim(),
+        date: playdateDateStr,
+        startTime: startTimeStr,
+        endTime: endTime,
+        duration: document.getElementById('playdateDuration').value,
+        dogSocialStatus: document.getElementById('dogSocialStatus').value,
+        notes: document.getElementById('playdateNotes').value.trim(),
+        lat: document.getElementById('mapLat').value || null,
+        lng: document.getElementById('mapLng').value || null,
+        timestamp: Date.now(),
+        user: username,
+        status: 'active' // New field: active, completed, cancelled
+      };
+
+      try {
+        const playdateKey = currentPlaydateKeyInput.value;
+        if (playdateKey) {
+          // Update existing playdate
+          await update(child(playdateRef, playdateKey), data);
+          showNotification("Playdate updated successfully!");
+        } else {
+          // Propose new playdate
+          await push(playdateRef, data);
+          showNotification("Playdate proposed successfully!");
+        }
+        resetPlaydateForm();
+      } catch (error) {
+        console.error('Error proposing/updating playdate:', error);
+        showNotification("Error. Please try again.");
+      } finally {
+        loadingSpinner.style.display = 'none';
+      }
+    });
+
+    // Cancel Edit button
+    cancelEditBtn.addEventListener('click', resetPlaydateForm);
+
+    // Login Form Submission (using site accounts)
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        if (!username || !password) return showNotification("Username and password required.");
+
+        const snapshot = await get(child(accountsRef, username));
+        if (!snapshot.exists() || snapshot.val().password !== password) {
+          showNotification("Invalid username or password.");
+          return;
+        }
+        showNotification(`Welcome, ${username}!`);
+        localStorage.setItem('dogWalkUser', username);
+        loggedInUser = username;
+        document.getElementById('accountInfo').textContent = `Logged in as: ${loggedInUser}`;
+        loginForm.reset();
+        authModal.classList.add('hidden'); // Close modal on successful login
+        applyFilter(); // Re-apply filter to show/hide chat buttons and edit buttons
+        setupUnreadMessageListener(); // Start listening for unread messages
+      });
+    }
+
+    // Register Form Submission (using site accounts)
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+      registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('regUsername').value.trim();
+        const password = document.getElementById('regPassword').value;
+        if (!username || !password) return showNotification("Username and password required.");
+
+        const snapshot = await get(child(accountsRef, username));
+        if (snapshot.exists()) {
+          showNotification("Username already taken.");
+          return;
+        }
+        await set(child(accountsRef, username), { username, password, bio: '', dogSocialStatus: 'Friendly' }); // Add default bio and dogSocialStatus
+        showNotification("Account created! You can now sign in.");
+        registerForm.reset();
+      });
+    }
+
+    // Change Password Form Submission (using site accounts)
+    const changePasswordForm = document.getElementById('changePasswordForm');
+    if (changePasswordForm) {
+      changePasswordForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newPassword = document.getElementById('newPassword').value;
+        if (!newPassword) return showNotification("New password required.");
+        if (loggedInUser === "Anonymous") {
+          showNotification("Please log in to change your password.");
+          return;
+        }
+
+        try {
+          await update(child(accountsRef, loggedInUser), { password: newPassword });
+          showNotification("Password changed successfully!");
+          changePasswordForm.reset();
+        } catch (error) {
+          console.error("Error changing password:", error);
+          showNotification("Failed to change password.");
+        }
+      });
+    }
+
+    function createPlaydateElement(data, key) {
+      const el = document.createElement('div');
+      el.className = 'status-entry';
+      el.dataset.type = data.type.toLowerCase();
+      el.dataset.dogSocialStatus = data.dogSocialStatus.toLowerCase();
+      el.dataset.user = data.user || "Anonymous";
+      el.dataset.key = key;
+      el.dataset.status = data.status || 'active'; // Add status to dataset
+
+      // Add status class to the card
+      const statusClass = data.status ? data.status.toLowerCase() : 'active';
+      el.classList.add(statusClass);
+
+      let mapDiv = '';
+      if (data.lat && data.lng) {
+        const [swLat, neLat] = data.lat.split(',');
+        const [swLng, neLng] = data.lng.split(',');
+        const mapId = `playdate-map-${key}`;
+        mapDiv = `<div id="${mapId}" class="status-mini-map" style="height:120px;border-radius:8px;margin:8px 0;"></div>`;
+        setTimeout(() => {
+          renderStatusMap(mapId, swLat, swLng, neLat, neLng);
+        }, 0);
+      }
+
+      function isAdmin() {
+        return loggedInUser && loggedInUser.toLowerCase() === 'admin';
+      }
+
+      const isOwner = data.user === loggedInUser && loggedInUser !== "Anonymous";
+      const canChat = loggedInUser !== "Anonymous" && data.user !== loggedInUser; // Can chat if logged in and not self
+      const isInterested = data.interestedUsers && data.interestedUsers[loggedInUser]; // Check if current user is interested
+
+      let actionButtons = '';
+
+      if (isOwner || isAdmin()) {
+        actionButtons += `<button class="delete-status-btn" data-key="${key}">Delete</button>`;
+      }
+      if (isOwner) { // Only owner can edit or mark status
+        actionButtons += `<button class="edit-status-btn" data-key="${key}">Edit</button>`;
+        if (data.status === 'active') {
+          actionButtons += `<button class="mark-status-btn" data-key="${key}" data-status="completed">Mark Completed</button>`;
+          actionButtons += `<button class="mark-status-btn" data-key="${key}" data-status="cancelled">Mark Cancelled</button>`;
+        } else if (data.status === 'completed' || data.status === 'cancelled') {
+          actionButtons += `<button class="mark-status-btn" data-key="${key}" data-status="active">Mark Active</button>`;
+        }
+      }
+      
+      if (canChat) {
+        actionButtons += `<button class="chat-button" data-user="${data.user}">Chat with ${data.user}</button>`;
+      }
+
+      // Interest button/list
+      let interestSection = '';
+      if (isOwner) {
+        // Display interested users to the owner
+        const interestedUsers = data.interestedUsers ? Object.keys(data.interestedUsers) : [];
+        if (interestedUsers.length > 0) {
+          interestSection = `
+            <div class="interested-users-list">
+              <strong>Interested Users:</strong>
+              ${interestedUsers.map(user => `<span>${user}</span>`).join('')}
+            </div>
+          `;
+        } else {
+          interestSection = `<div class="interested-users-list"><span class="no-interest">No one has expressed interest yet.</span></div>`;
+        }
+      } else if (loggedInUser !== "Anonymous") {
+        // Display "I'm Interested" button to other logged-in users
+        interestSection = `
+          <button class="interest-btn ${isInterested ? 'interested' : ''}" data-key="${key}" data-user="${loggedInUser}">
+            <i class="fas fa-heart"></i> ${isInterested ? 'Interested!' : "I'm Interested"}
+          </button>
+        `;
+      }
+
+
+      el.innerHTML = `
+        <div class="status-card ${statusClass}">
+          <div class="status-card-header">
+            <span class="status-type playdate-type ${data.type.replace(/\s+/g, '-').toLowerCase()}" id="playdate-type-${key}">
+              <i class="${getPlaydateIcon(data.type)} status-icon"></i> ${data.type}
+            </span>
+            <span class="status-user" data-username="${data.user}">
+              <i class="fas fa-user"></i> ${data.user || "Anonymous"}
+            </span>
+            <div class="status-actions">
+              ${actionButtons}
+            </div>
+          </div>
+          <div class="status-card-body">
+            <div class="status-location">
+              <i class="fas fa-map-marker-alt"></i> <strong>Location:</strong> ${data.location}
+            </div>
+            ${mapDiv}
+            <div class="status-details-row">
+              <div><i class="far fa-calendar-alt"></i> <strong>Date:</strong> ${data.date}</div>
+              <div><i class="far fa-clock"></i> <strong>Time:</strong> ${data.startTime} - ${data.endTime}</div>
+              <div><i class="fas fa-hourglass-half"></i> <strong>Duration:</strong> ${data.duration} mins</div>
+              <div><i class="fas fa-dog"></i> <strong>My Dog:</strong> ${data.dogSocialStatus}</div>
+            </div>
+            ${data.notes ? `<div class="status-notes"><i class="fas fa-sticky-note"></i> <strong>Notes:</strong> ${data.notes}</div>` : ''}
+            ${interestSection}
+          </div>
+        </div>
+      `;
+
+      return el;
+    }
+
+    // Event listener for delete, edit, mark status, chat, and interest buttons on playdate cards
+    playdateListEl.addEventListener('click', async (e) => {
+      const target = e.target;
+      const key = target.dataset.key || target.closest('.status-entry')?.dataset.key;
+      const playdateEl = target.closest('.status-entry');
+      const owner = playdateEl?.dataset.user || "Anonymous";
+
+      if (target.classList.contains('delete-status-btn')) {
+        const adminDeletingOther = 
+          loggedInUser && loggedInUser.toLowerCase() === 'admin' && owner !== loggedInUser;
+
+        if (adminDeletingOther) {
+          const proceed = confirm(`You are deleting a playdate proposed by "${owner}". Are you sure?`);
+          if (!proceed) return;
+        }
+
+        try {
+          await remove(child(playdateRef, key));
+          playdateEl.remove();
+          showNotification("Playdate deleted.");
+          applyFilter();
+        } catch (err) {
+          showNotification("Failed to delete playdate.");
+        }
+      } else if (target.classList.contains('edit-status-btn')) {
+        const playdateData = loadedPlaydates.get(key)?.data;
+        if (playdateData) {
+          document.getElementById('playdateType').value = playdateData.type;
+          document.getElementById('location').value = playdateData.location;
+          document.getElementById('playdateDate').value = playdateData.date;
+          document.getElementById('startTime').value = playdateData.startTime;
+          document.getElementById('playdateDuration').value = playdateData.duration;
+          updatePlaydateDuration(playdateData.duration); // Update slider label
+          document.getElementById('dogSocialStatus').value = playdateData.dogSocialStatus;
+          document.getElementById('playdateNotes').value = playdateData.notes;
+          document.getElementById('mapLat').value = playdateData.lat || '';
+          document.getElementById('mapLng').value = playdateData.lng || '';
+          currentPlaydateKeyInput.value = key;
+
+          // Adjust buttons
+          proposePlaydateBtn.style.display = 'none';
+          updatePlaydateBtn.style.display = 'inline-block';
+          cancelEditBtn.style.display = 'inline-block';
+
+          // Re-draw rectangle on map if coordinates exist
+          if (playdateData.lat && playdateData.lng) {
+            const [swLat, neLat] = playdateData.lat.split(',');
+            const [swLng, neLng] = playdateData.lng.split(',');
+            const bounds = [
+              [parseFloat(swLat), parseFloat(swLng)],
+              [parseFloat(neLat), parseFloat(neLng)]
+            ];
+            if (drawnArea) drawnItems.clearLayers(); // Clear previous drawing
+            drawnArea = L.rectangle(bounds, { color: "#3a6ea5", weight: 2, fillOpacity: 0.2 }).addTo(drawnItems);
+            map.fitBounds(bounds, { padding: [5, 5] });
+          } else {
+            if (drawnArea) drawnItems.clearLayers(); // Clear previous drawing
+            drawnArea = null;
+          }
+
+          window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to form
+        }
+      } else if (target.classList.contains('mark-status-btn')) {
+        const newStatus = target.dataset.status;
+        try {
+          await update(child(playdateRef, key), { status: newStatus });
+          showNotification(`Playdate marked as ${newStatus}.`);
+          // Re-render the specific playdate element to update its class
+          const updatedData = { ...loadedPlaydates.get(key).data, status: newStatus };
+          const updatedEl = createPlaydateElement(updatedData, key);
+          playdateEl.replaceWith(updatedEl);
+          loadedPlaydates.set(key, { data: updatedData, element: updatedEl });
+          applyFilter(); // Re-apply filter to ensure visibility rules are correct
+        } catch (err) {
+          console.error("Error marking playdate status:", err);
+          showNotification("Failed to update playdate status.");
+        }
+      } else if (target.classList.contains('chat-button')) {
+        const chatPartner = target.dataset.user;
+        openChat(chatPartner);
+      } else if (target.classList.contains('interest-btn')) {
+        if (loggedInUser === "Anonymous") {
+          showNotification("Please log in to express interest.");
+          return;
+        }
+        const playdateKey = target.dataset.key;
+        const currentInterestedUsers = loadedPlaydates.get(playdateKey)?.data.interestedUsers || {};
+        
+        if (currentInterestedUsers[loggedInUser]) {
+          // Already interested, remove interest
+          delete currentInterestedUsers[loggedInUser];
+          showNotification("Interest removed.");
+        } else {
+          // Not interested, add interest
+          currentInterestedUsers[loggedInUser] = true; // Simple boolean to mark interest
+          showNotification("Interest expressed!");
+        }
+        
+        try {
+          await update(child(playdateRef, playdateKey), { interestedUsers: currentInterestedUsers });
+          // Re-render the specific playdate element to update its interest button/list
+          const updatedData = { ...loadedPlaydates.get(playdateKey).data, interestedUsers: currentInterestedUsers };
+          const updatedEl = createPlaydateElement(updatedData, playdateKey);
+          playdateEl.replaceWith(updatedEl);
+          loadedPlaydates.set(playdateKey, { data: updatedData, element: updatedEl });
+          applyFilter();
+        } catch (err) {
+          console.error("Error updating interest:", err);
+          showNotification("Failed to update interest.");
+        }
+      } else if (target.closest('.status-user')) { // Clicked on a username
+        const username = target.closest('.status-user').dataset.username;
+        if (username) {
+          openUserProfile(username);
+        }
+      }
+    });
+
+    // Helper to render a mini Leaflet map in a card
+    function renderStatusMap(mapId, swLat, swLng, neLat, neLng) {
+      const map = L.map(mapId, {
+        attributionControl: false,
+        zoomControl: false,
+        dragging: false,
+        scrollWheelZoom: false,
+        doubleClickZoom: false,
+        boxZoom: false,
+        keyboard: false,
+        tap: false,
+        touchZoom: false
+      }).setView([(parseFloat(swLat) + parseFloat(neLat)) / 2, (parseFloat(swLng) + parseFloat(neLng)) / 2], 15);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        interactive: false
+      }).addTo(map);
+
+      const bounds = [
+        [parseFloat(swLat), parseFloat(swLng)],
+        [parseFloat(neLat), parseFloat(neLng)]
+      ];
+      L.rectangle(bounds, { color: "#3a6ea5", weight: 2, fillOpacity: 0.2 }).addTo(map);
+      map.fitBounds(bounds, { padding: [5, 5] });
+    }
+
+    function getPlaydateIcon(type) {
+      switch (type.toLowerCase()) {
+        case 'casual': return 'fas fa-bone';
+        case 'structured': return 'fas fa-running';
+        case 'training': return 'fas fa-graduation-cap';
+        default: return 'fas fa-dog';
+      }
+    }
+
+    function updateEmptyState() {
+      const visible = [...playdateListEl.children].some((el) => el.style.display !== 'none');
+      emptyStateEl.classList.toggle('hidden', visible);
+    }
+
+    function applyFilter() {
+      [...playdateListEl.children].forEach(el => {
+        let match = false;
+        const playdateStatus = el.dataset.status || 'active'; // Default to active if not set
+
+        if (currentFilter === 'all') {
+          match = true;
+        } else if (currentFilter === 'my') {
+          match = (el.dataset.user === loggedInUser);
+        } else {
+          match = el.dataset.type === currentFilter || el.dataset.dogSocialStatus.includes(currentFilter);
+        }
+        
+        // Hide completed/cancelled playdates unless explicitly filtered for them (not implemented yet)
+        // For now, just hide if not active and not 'my' filter
+        if (playdateStatus !== 'active' && currentFilter !== 'my') {
+            match = false; // Hide completed/cancelled from 'all' and other filters
+        }
+
+
+        el.style.display = match ? 'block' : 'none';
+
+        // Update chat and edit button visibility based on login status
+        const chatButton = el.querySelector('.chat-button');
+        if (chatButton) {
+          const posterUser = el.dataset.user;
+          if (loggedInUser !== "Anonymous" && loggedInUser !== posterUser) {
+            chatButton.style.display = 'inline-block'; // Show if logged in and not self
+          } else {
+            chatButton.style.display = 'none'; // Hide otherwise
+          }
+        }
+
+        const editButton = el.querySelector('.edit-status-btn');
+        const markButtons = el.querySelectorAll('.mark-status-btn');
+        if (editButton) {
+          if (el.dataset.user === loggedInUser) {
+            editButton.style.display = 'inline-block';
+            markButtons.forEach(btn => btn.style.display = 'inline-block');
+          } else {
+            editButton.style.display = 'none';
+            markButtons.forEach(btn => btn.style.display = 'none');
+          }
+        }
+
+        // Update interest button visibility
+        const interestButton = el.querySelector('.interest-btn');
+        if (interestButton) {
+          const posterUser = el.dataset.user;
+          if (loggedInUser === "Anonymous" || loggedInUser === posterUser) {
+            interestButton.style.display = 'none'; // Hide if not logged in or is owner
+          } else {
+            interestButton.style.display = 'inline-block'; // Show otherwise
+          }
+        }
+        // Hide interested users list if not owner
+        const interestedUsersList = el.querySelector('.interested-users-list');
+        if (interestedUsersList && el.dataset.user !== loggedInUser) {
+          interestedUsersList.style.display = 'none';
+        } else if (interestedUsersList && el.dataset.user === loggedInUser) {
+          interestedUsersList.style.display = 'block';
+        }
+      });
+      updateEmptyState();
+    }
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter.toLowerCase();
+        applyFilter();
+      });
+    });
+
+    document.getElementById('myPlaydatesBtn').addEventListener('click', () => {
+      currentFilter = 'my';
+      applyFilter();
+    });
+
+    function showNotification(msg) {
+      const notif = document.getElementById('notification');
+      document.getElementById('notifText').textContent = msg;
+      notif.classList.add('show');
+      setTimeout(() => notif.classList.remove('show'), 3000);
+    }
+
+    // Periodically check and remove expired playdates
+    setInterval(() => {
+      const now = new Date();
+
+      loadedPlaydates.forEach(({ data, element }, key) => {
+        const [day, month, year] = data.date.split('-').map(Number);
+        const [endHour, endMinute] = data.endTime.split(':').map(Number);
+        const playdateEnd = new Date(year, month - 1, day, endHour, endMinute);
+
+        if (now > playdateEnd && data.status === 'active') {
+          // Automatically mark as completed if active and time passed
+          update(child(playdateRef, key), { status: 'completed' })
+            .then(() => {
+              showNotification(`Playdate "${data.location}" automatically marked as completed.`);
+              // No need to remove, just update status and re-render
+              const updatedData = { ...data, status: 'completed' };
+              const updatedEl = createPlaydateElement(updatedData, key);
+              element.replaceWith(updatedEl);
+              loadedPlaydates.set(key, { data: updatedData, element: updatedEl });
+              applyFilter();
+            })
+            .catch(err => console.error("Error auto-marking playdate:", err));
+        }
+      });
+    }, 60 * 1000); // every 60 seconds
+
+    onChildAdded(playdateRef, (snapshot) => {
+      const data = snapshot.val();
+      const key = snapshot.key;
+
+      const [day, month, year] = data.date.split('-').map(Number);
+      const [endHour, endMinute] = data.endTime.split(':').map(Number);
+      const playdateEnd = new Date(year, month - 1, day, endHour, endMinute);
+
+      const now = new Date();
+      // Only add if not expired and not cancelled, or if it's 'my' playdate
+      if (now <= playdateEnd || data.status === 'active' || data.user === loggedInUser) {
+        const el = createPlaydateElement(data, key);
+        playdateListEl.prepend(el);
+        loadedPlaydates.set(key, { data, element: el });
+        applyFilter();
+      }
+    });
+
+    // --- Authentication Modal ---
+    const authModal = document.getElementById('authModal');
+    const openAuthModalBtn = document.getElementById('openAuthModal');
+    const closeAuthModalBtn = document.getElementById('closeAuthModal');
+
+    openAuthModalBtn.addEventListener('click', () => {
+      authModal.classList.remove('hidden');
+    });
+    closeAuthModalBtn.addEventListener('click', () => {
+      authModal.classList.add('hidden');
+    });
+    window.addEventListener('click', (e) => {
+      if (e.target === authModal) authModal.classList.add('hidden');
+    });
+
+    // --- Filter Modal Logic ---
+    const filterModal = document.getElementById('filterModal');
+    const openFilterModalBtn = document.getElementById('openFilterModal');
+    const closeFilterModalBtn = document.getElementById('closeFilterModal');
+
+    openFilterModalBtn.addEventListener('click', () => {
+      filterModal.classList.remove('hidden');
+    });
+    closeFilterModalBtn.addEventListener('click', () => {
+      filterModal.classList.add('hidden');
+    });
+    window.addEventListener('click', (e) => {
+      if (e.target === filterModal) filterModal.classList.add('hidden');
+    });
+
+    // Theme switching logic
+    const themeBtn = document.getElementById('themeSwitcherBtn');
+    const themePopup = document.getElementById('themePopup');
+    const themeOptions = document.querySelectorAll('.theme-option');
+
+    themeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      themePopup.classList.toggle('show');
+    });
+
+    document.body.addEventListener('click', () => {
+      themePopup.classList.remove('show');
+    });
+
+    themePopup.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+
+    themeOptions.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const theme = btn.dataset.theme;
+        document.body.className = '';
+        if (theme !== 'default') document.body.classList.add(theme);
+        localStorage.setItem('dogWalkTheme', theme);
+        themePopup.classList.remove('show');
+      });
+    });
+
+    const savedTheme = localStorage.getItem('dogWalkTheme');
+    if (savedTheme && savedTheme !== 'default') {
+      document.body.classList.add(savedTheme);
+    }
+
+    // Hamburger menu logic
+    document.getElementById('hamburgermenu').addEventListener('click', function() {
+      this.classList.toggle('active');
+      document.getElementById('sideMenu').classList.toggle('open');
+    });
+
+    // Service Worker registration
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(() => console.log("✅ Service Worker Registered"));
+    }
+
+    // --- Leaflet Map Setup ---
+    const map = L.map('map').setView([51.797, -4.742], 15); // Narberth center
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    let drawnArea;
+    const drawControl = new L.Control.Draw({
+      draw: {
+        marker: false,
+        polyline: false,
+        circle: false,
+        circlemarker: false,
+        polygon: false,
+        rectangle: {
+          shapeOptions: {
+            color: '#3a6ea5'
+          }
+        }
+      },
+      edit: {
+        featureGroup: new L.FeatureGroup()
+      }
+    });
+    map.addControl(drawControl);
+
+    const drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
+
+    map.on(L.Draw.Event.CREATED, function (e) {
+      drawnItems.clearLayers();
+      drawnArea = e.layer;
+      drawnItems.addLayer(drawnArea);
+      const bounds = drawnArea.getBounds();
+      document.getElementById('mapLat').value = bounds.getSouthWest().lat + ',' + bounds.getNorthEast().lat;
+      document.getElementById('mapLng').value = bounds.getSouthWest().lng + ',' + bounds.getNorthEast().lng;
+    });
+
+    document.getElementById('location').addEventListener('change', function() {
+      const loc = this.value.toLowerCase();
+      const locations = {
+        "narberth moor": [51.7978, -4.7422],
+        "bloomfield park": [51.8002, -4.7410],
+        "narberth high street": [51.7992, -4.7428],
+        "narberth castle": [51.7970, -4.7445],
+        "narberth playing fields": [51.8008, -4.7450],
+        "narberth woods": [51.7960, -4.7460],
+        "narberth dog park": [51.7985, -4.7405]
+      };
+      if (locations[loc]) {
+        map.setView(locations[loc], 16);
+        if (marker) marker.setLatLng(locations[loc]);
+        else marker = L.marker(locations[loc]).addTo(map);
+        document.getElementById('mapLat').value = locations[loc][0];
+        document.getElementById('mapLng').value = locations[loc][1];
+      }
+    });
+
+    // --- Chat Functionality ---
+
+    function getChatRoomName(user1, user2) {
+      // Ensure consistent room name regardless of who initiates chat
+      return [user1, user2].sort().join('_');
+    }
+
+    async function openChat(partnerUsername) {
+      if (loggedInUser === "Anonymous") {
+        showNotification("Please log in to use the chat feature.");
+        return;
+      }
+      if (loggedInUser === partnerUsername) {
+        showNotification("You cannot chat with yourself.");
+        return;
+      }
+
+      currentChatPartner = partnerUsername;
+      chatHeader.textContent = `Chat with ${partnerUsername}`;
+      chatMessagesEl.innerHTML = ''; // Clear previous messages
+
+      const roomName = getChatRoomName(loggedInUser, partnerUsername);
+      currentChatRoomRef = child(chatsRef, roomName);
+
+      // Detach previous listener if any
+      if (chatListener) {
+        off(currentChatRoomRef, 'child_added', chatListener);
+      }
+
+      // Update last read timestamp for the current user in this chat
+      await update(child(currentChatRoomRef, `readStatus/${loggedInUser}`), { timestamp: Date.now() });
+      updateUnreadMessagesBadge(); // Recalculate badge after marking as read
+
+      // Listen for new messages
+      chatListener = onChildAdded(currentChatRoomRef, (snapshot) => {
+        const message = snapshot.val();
+        // Only display if it's a message, not a readStatus update
+        if (message.sender && message.text && message.timestamp) {
+          displayMessage(message);
+        }
+      });
+
+      chatModal.classList.remove('hidden');
+      chatInput.focus();
+    }
+
+    function displayMessage(message) {
+      const messageDiv = document.createElement('div');
+      messageDiv.classList.add('chat-message');
+      messageDiv.classList.add(message.sender === loggedInUser ? 'sent' : 'received');
+
+      const senderSpan = document.createElement('span');
+      senderSpan.classList.add('sender');
+      senderSpan.textContent = message.sender;
+
+      const textSpan = document.createElement('span');
+      textSpan.textContent = message.text;
+
+      const timestampSpan = document.createElement('span');
+      timestampSpan.classList.add('timestamp');
+      const date = new Date(message.timestamp);
+      timestampSpan.textContent = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      messageDiv.appendChild(senderSpan);
+      messageDiv.appendChild(textSpan);
+      messageDiv.appendChild(timestampSpan);
+      chatMessagesEl.appendChild(messageDiv);
+
+      // Scroll to bottom
+      chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+    }
+
+    sendMessageBtn.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+
+    async function sendMessage() {
+      const messageText = chatInput.value.trim();
+      if (messageText === '' || !currentChatRoomRef) return;
+
+      const message = {
+        sender: loggedInUser,
+        text: messageText,
+        timestamp: Date.now()
+      };
+
+      try {
+        await push(currentChatRoomRef, message);
+        chatInput.value = ''; // Clear input
+        // Update last read timestamp for sender immediately after sending
+        await update(child(currentChatRoomRef, `readStatus/${loggedInUser}`), { timestamp: Date.now() });
+      } catch (error) {
+        console.error("Error sending message:", error);
+        showNotification("Failed to send message.");
+      }
+    }
+
+    closeChatModalBtn.addEventListener('click', () => {
+      chatModal.classList.add('hidden');
+      // Detach listener when closing chat
+      if (chatListener && currentChatRoomRef) {
+        off(currentChatRoomRef, 'child_added', chatListener);
+      }
+      currentChatPartner = null;
+      currentChatRoomRef = null;
+      chatListener = null;
+    });
+
+    window.addEventListener('click', (e) => {
+      if (e.target === chatModal) {
+        chatModal.classList.add('hidden');
+        if (chatListener && currentChatRoomRef) {
+          off(currentChatRoomRef, 'child_added', chatListener);
+        }
+        currentChatPartner = null;
+        currentChatRoomRef = null;
+        chatListener = null;
+      }
+    });
+
+    // --- My Chats Modal Logic ---
+    openMyChatsModalBtn.addEventListener('click', () => {
+      if (loggedInUser === "Anonymous") {
+        showNotification("Please log in to view your chats.");
+        return;
+      }
+      loadMyChats();
+      myChatsModal.classList.remove('hidden');
+    });
+
+    closeMyChatsModal.addEventListener('click', () => {
+      myChatsModal.classList.add('hidden');
+    });
+
+    window.addEventListener('click', (e) => {
+      if (e.target === myChatsModal) {
+        myChatsModal.classList.add('hidden');
+      }
+    });
+
+    async function loadMyChats() {
+      myChatsList.innerHTML = ''; // Clear previous list
+      const snapshot = await get(chatsRef);
+      const chatRooms = snapshot.val();
+      const chatPartners = new Map(); // Use Map to store partner and unread count
+
+      if (chatRooms) {
+        for (const roomName in chatRooms) {
+          const usersInRoom = roomName.split('_');
+          if (usersInRoom.includes(loggedInUser)) {
+            const otherUser = usersInRoom.find(user => user !== loggedInUser);
+            if (otherUser) {
+              let unreadCount = 0;
+              const lastReadTimestamp = chatRooms[roomName].readStatus?.[loggedInUser]?.timestamp || 0;
+              
+              // Iterate through messages to count unread
+              for (const messageKey in chatRooms[roomName]) {
+                if (messageKey !== 'readStatus') { // Exclude readStatus node
+                  const message = chatRooms[roomName][messageKey];
+                  if (message.sender !== loggedInUser && message.timestamp > lastReadTimestamp) {
+                    unreadCount++;
+                  }
+                }
+              }
+              chatPartners.set(otherUser, unreadCount);
+            }
+          }
+        }
+      }
+
+      if (chatPartners.size === 0) {
+        myChatsList.innerHTML = '<p style="text-align: center; color: #555;">No active conversations.</p>';
+      } else {
+        // Sort partners by unread count (unread first)
+        const sortedPartners = Array.from(chatPartners.entries()).sort((a, b) => b[1] - a[1]);
+
+        sortedPartners.forEach(([partner, unreadCount]) => {
+          const chatPartnerBtn = document.createElement('button');
+          chatPartnerBtn.textContent = partner;
+          if (unreadCount > 0) {
+            const badge = document.createElement('span');
+            badge.classList.add('unread-badge');
+            badge.textContent = unreadCount;
+            chatPartnerBtn.appendChild(badge);
+          }
+          chatPartnerBtn.addEventListener('click', () => {
+            myChatsModal.classList.add('hidden'); // Close my chats modal
+            openChat(partner); // Open chat with selected partner
+          });
+          myChatsList.appendChild(chatPartnerBtn);
+        });
+      }
+    }
+
+    // Function to update the global unread messages badge
+    async function updateUnreadMessagesBadge() {
+      if (loggedInUser === "Anonymous") {
+        myChatsNotificationBadge.style.display = 'none';
+        myChatsNotificationBadge.textContent = '0';
+        unreadMessagesCount = 0;
+        return;
+      }
+
+      let totalUnread = 0;
+      const snapshot = await get(chatsRef);
+      const chatRooms = snapshot.val();
+
+      if (chatRooms) {
+        for (const roomName in chatRooms) {
+          const usersInRoom = roomName.split('_');
+          if (usersInRoom.includes(loggedInUser)) {
+            const lastReadTimestamp = chatRooms[roomName].readStatus?.[loggedInUser]?.timestamp || 0;
+            
+            for (const messageKey in chatRooms[roomName]) {
+              if (messageKey !== 'readStatus') {
+                const message = chatRooms[roomName][messageKey];
+                if (message.sender !== loggedInUser && message.timestamp > lastReadTimestamp) {
+                  totalUnread++;
+                }
+              }
+            }
+          }
+        }
+      }
+      unreadMessagesCount = totalUnread;
+      if (unreadMessagesCount > 0) {
+        myChatsNotificationBadge.textContent = unreadMessagesCount;
+        myChatsNotificationBadge.style.display = 'inline-block';
+      } else {
+        myChatsNotificationBadge.style.display = 'none';
+      }
+    }
+
+    // Setup a listener for all chat rooms involving the loggedInUser to update the badge
+    function setupUnreadMessageListener() {
+      if (loggedInUser === "Anonymous") return;
+
+      // Detach previous listener if any
+      if (window.globalChatListener) {
+        off(chatsRef, 'value', window.globalChatListener);
+      }
+
+      // Listen to changes in the entire 'chats' node
+      window.globalChatListener = onValue(chatsRef, (snapshot) => {
+        updateUnreadMessagesBadge();
+      });
+    }
+
+    // --- User Profile Modal Logic ---
+    async function openUserProfile(username) {
+      profileUsername.textContent = username;
+      profileDogSocialStatus.textContent = 'Loading...';
+      profileBio.textContent = 'Loading...';
+      profileActivePlaydates.innerHTML = '<p class="no-playdates">Loading active playdates...</p>';
+
+      userProfileModal.classList.remove('hidden');
+
+      try {
+        // Fetch user account details
+        const accountSnapshot = await get(child(accountsRef, username));
+        if (accountSnapshot.exists()) {
+          const accountData = accountSnapshot.val();
+          profileDogSocialStatus.textContent = accountData.dogSocialStatus || 'Not specified';
+          profileBio.textContent = accountData.bio || 'No bio provided.';
+        } else {
+          profileDogSocialStatus.textContent = 'N/A';
+          profileBio.textContent = 'Account details not found.';
+        }
+
+        // Fetch user's active playdates
+        const playdatesSnapshot = await get(playdateRef);
+        const usersPlaydates = [];
+        playdatesSnapshot.forEach(childSnapshot => {
+          const playdate = childSnapshot.val();
+          if (playdate.user === username && playdate.status === 'active') {
+            usersPlaydates.push(playdate);
+          }
+        });
+
+        profileActivePlaydates.innerHTML = ''; // Clear previous list
+        if (usersPlaydates.length > 0) {
+          usersPlaydates.forEach(playdate => {
+            const playdateDiv = document.createElement('div');
+            playdateDiv.innerHTML = `<strong>${playdate.type}</strong> at ${playdate.location} on ${playdate.date} (${playdate.startTime})`;
+            profileActivePlaydates.appendChild(playdateDiv);
+          });
+        } else {
+          profileActivePlaydates.innerHTML = '<p class="no-playdates">No active playdates.</p>';
+        }
+
+      } catch (error) {
+        console.error("Error loading user profile:", error);
+        profileDogSocialStatus.textContent = 'Error loading';
+        profileBio.textContent = 'Error loading profile.';
+        profileActivePlaydates.innerHTML = '<p class="no-playdates">Error loading playdates.</p>';
+        showNotification("Error loading user profile.");
+      }
+    }
+
+    closeUserProfileModal.addEventListener('click', () => {
+      userProfileModal.classList.add('hidden');
+    });
+
+    window.addEventListener('click', (e) => {
+      if (e.target === userProfileModal) {
+        userProfileModal.classList.add('hidden');
+      }
+    });
+
+    // Initial application of filter to set button visibility on load
+    applyFilter();
+    // Call setupUnreadMessageListener on initial load if user is already logged in
+    if (loggedInUser !== "Anonymous") {
+      setupUnreadMessageListener();
+    }
+  </script>
+</body>
+</html>

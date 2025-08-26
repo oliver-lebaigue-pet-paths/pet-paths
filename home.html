@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="theme-color" content="#4CAF50">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Narberth Dog Walk Status</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+  <link rel="manifest" href="/manifest.json">
+  <style>
+    .theme-color-preview {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .filter {
+      display: flex;
+      font-size: large;
+      align-items: center;
+      gap: 0.4em;
+      padding: 4px 12px;
+      background-color: #3a6ea5;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .status-header-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+      gap: 0.5em;
+    }
+    @media (max-width: 600px) {
+      .status-header-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+      }
+      .status-header-row .filter {
+        margin-left: 0;
+        margin-top: 0.5em;
+        width: 100%;
+      }
+    }
+
+    .status-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(60,60,60,0.08);
+      border: 1.5px solid #e0e0de;
+      margin-bottom: 18px;
+      padding: 18px 20px 14px 20px;
+      transition: box-shadow 0.2s;
+      position: relative;
+    }
+    .status-card:hover {
+      box-shadow: 0 4px 18px rgba(60,60,60,0.16);
+    }
+    .status-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      gap: 1em;
+    }
+    .status-type {
+      font-size: 1.1em;
+      font-weight: 600;
+      color: #3a6ea5;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+    .status-user {
+      font-size: 0.95em;
+      color: #555;
+      background: #f3f3f3;
+      border-radius: 8px;
+      padding: 2px 10px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+    }
+    .status-actions {
+      display: flex;
+      gap: 0.5em;
+    }
+    .status-card-body {
+      margin-top: 6px;
+    }
+    .status-location {
+      font-size: 1em;
+      margin-bottom: 8px;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+    .status-details-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5em;
+      margin-bottom: 8px;
+      font-size: 0.98em;
+      color: #444;
+    }
+    .status-details-row > div {
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+    }
+    .status-notes {
+      background: #f8f8fa;
+      border-left: 3px solid #3a6ea5;
+      border-radius: 7px;
+      padding: 7px 12px;
+      margin-top: 8px;
+      font-size: 0.97em;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+    .status-icon {
+      color: #3a6ea5;
+      margin-right: 4px;
+    }
+    .status-mini-map {
+      margin: 8px 0 8px 0;
+      border-radius: 8px;
+      border: 1px solid #e0e0de;
+      box-shadow: 0 1px 4px rgba(60,60,60,0.07);
+    }
+    .edit-status-btn, .delete-status-btn {
+      font-size: 0.95em;
+      padding: 4px 12px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      margin-left: 2px;
+      margin-right: 0;
+      transition: background 0.15s;
+    }
+    .edit-status-btn {
+      background: #3a6ea5;
+      color: #fff;
+    }
+    .edit-status-btn:hover {
+      background: #24507a;
+    }
+    .delete-status-btn {
+      background: #c2185b;
+      color: #fff;
+    }
+    .delete-status-btn:hover {
+      background: #a3154a;
+    }
+
+    .status-type.walking {
+      color: #4CAF50; /* green */
+    }
+    .status-type.not-walking {
+      color: #F44336; /* red */
+    }
+    .status-type.planning-to-walk {
+      color: #FFC107; /* amber */
+    }
+
+    @media (max-width: 600px) {
+      .status-card {
+        padding: 12px 8px 10px 8px;
+      }
+      .status-details-row {
+        flex-direction: column;
+        gap: 0.7em;
+      }
+    }
+
+    .styled-date {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+
+      font-family: 'Roboto', sans-serif;
+      font-size: 1em;
+      padding: 8px 12px;
+      border: 1.5px solid #ccc;
+      border-radius: 8px;
+      background-color: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+      max-width: 250px;
+    }
+
+    .styled-date:focus {
+      outline: none;
+      border-color: #3a6ea5;
+      box-shadow: 0 0 0 3px rgba(58,110,165,0.2);
+    }
+
+    .styled-date:hover {
+      border-color: #888;
+    }
+
+    /* --- Flatpickr popup custom styling --- */
+    .flatpickr-calendar {
+      border-radius: 16px !important;    /* more rounded */
+      box-shadow: 0 4px 18px rgba(0,0,0,0.15) !important;
+      border: 1.5px solid #e0e0de !important;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    /* Header (month/year bar) */
+    .flatpickr-months {
+      background: #3a6ea5 !important;
+      color: #fff !important;
+      border-radius: 16px 16px 0 0 !important;
+      padding: 6px 0 !important;
+    }
+
+    /* Arrows for month navigation */
+    .flatpickr-prev-month, .flatpickr-next-month {
+      color: #fff !important;
+      fill: #fff !important;
+    }
+
+    /* Day cells */
+    .flatpickr-day {
+      border-radius: 8px !important;
+    }
+
+    .flatpickr-day:hover {
+      background: #3a6ea5 !important;
+      color: #fff !important;
+    }
+
+    /* Selected day */
+    .flatpickr-day.selected {
+      background: #3a6ea5 !important;
+      color: #fff !important;
+      border: none !important;
+    }
+  </style>
+</head>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WXL0QKNMVG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-WXL0QKNMVG');
+</script>
+<body>
+  <div id="sideMenu">
+    <h2><i class="fas fa-paw"></i> Pet Paths</h2>
+    <a href="index.html" class="active"><i class="fas fa-home"></i> Home</a>
+    <a href="map.html" class="active"><i class="fas fa-map-marker-alt"></i> Map</a>
+    <a href="doggy-playdate/doggy-playdate.html" class="active"><i class="fas fa-dog"></i> Doggy Playdates</a>
+    <a href="feedback.html" class="active">Give Feedback!</a>
+    <div class="sidebar-theme-switcher">
+      <button id="themeSwitcherBtn" class="theme-switcher-btn" style="margin-bottom: 1rem;">
+        <i class="fas fa-palette"></i> Theme Options <i class="fas fa-chevron-down"></i>
+      </button>
+      <div id="themePopup" class="theme-popup">
+        <button class="theme-option" data-theme="default"><span class="theme-color-preview" style="background:#3a6ea5"></span> Ocean Blue</button>
+        <button class="theme-option" data-theme="high-contrast"><span class="theme-color-preview" style="background:#000; border:1px solid #fff;"></span> High Contrast</button>
+        <button class="theme-option" data-theme="forest"><span class="theme-color-preview" style="background:#2e7d32"></span> Forest Green</button>
+        <button class="theme-option" data-theme="sunset"><span class="theme-color-preview" style="background:#e65100"></span> Sunset Orange</button>
+        <button class="theme-option" data-theme="lavender"><span class="theme-color-preview" style="background:#7e57c2"></span> Lavender</button>
+        <button class="theme-option" data-theme="rose"><span class="theme-color-preview" style="background:#c2185b"></span> Rose Pink</button>
+        <button class="theme-option" data-theme="slate"><span class="theme-color-preview" style="background:#455a64"></span> Cool Slate</button>
+        <button class="theme-option" data-theme="coffee"><span class="theme-color-preview" style="background:#5d4037"></span> Coffee</button>
+        <button class="theme-option" data-theme="terminal"><span class="theme-color-preview" style="background:#00e676"></span> Terminal</button>
+      </div>
+    </div>
+    <!-- Add Account button -->
+    <button id="openAuthModal" class="theme-switcher-btn" style="margin-bottom:1rem;">
+      <i class="fas fa-user"></i> Account
+    </button>
+
+    <!-- Add to sidebar or modal -->
+    <div id="accountInfo" style="margin:1rem 0; font-weight:bold;"></div>
+    <button id="logoutBtn" class="theme-switcher-btn" style="margin-bottom:1rem;">Logout</button>
+
+    <a href="https://github.com/oliver-lebaigue-pet-paths/pet-paths" target="_blank" 
+      style="display:inline-flex; align-items:center; padding:8px 12px; background:#24292e; color:white; text-decoration:none; border-radius:6px; font-family:sans-serif;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" viewBox="0 0 16 16" style="margin-right:8px;">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 
+          7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49
+          -2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+          -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82
+          .72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07
+          -1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+          -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82
+          .64-.18 1.32-.27 2-.27s1.36.09 2 .27
+          c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12
+          .51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95
+          .29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2
+          0 .21.15.46.55.38A8.013 8.013 0 0016 8
+          c0-4.42-3.58-8-8-8z"/>
+      </svg>
+      View on GitHub
+    </a>
+  </div>
+
+  <!-- Hamburger Menu -->
+  <div id="hamburgermenu" aria-label="Toggle navigation menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <div class="main-content">
+    <h1><i class="fas fa-paw"></i> Narberth Dog Walk Status</h1>
+    <p>Share your dog walking status with other owners in Narberth to help coordinate walks and avoid busy areas.</p>
+
+    <!-- Registration and Login Modal -->
+    <div id="authModal" class="modal hidden">
+      <div class="modal-content">
+        <span id="closeAuthModal" class="close">&times;</span>
+        <form id="registerForm" style="margin-bottom:1rem;">
+          <h3>Create Account</h3>
+          <input type="text" id="regUsername" placeholder="Username" required />
+          <input type="password" id="regPassword" placeholder="Password" required />
+          <button type="submit">Register</button>
+        </form>
+        <form id="loginForm">
+          <h3>Sign In</h3>
+          <input type="text" id="loginUsername" placeholder="Username" required />
+          <input type="password" id="loginPassword" placeholder="Password" required />
+          <button type="submit">Login</button>
+        </form>
+        <form id="changePasswordForm" style="margin-top:1rem;">
+          <h3>Change Password</h3>
+         <input type="password" id="newPassword" placeholder="New Password" required />
+         <button type="submit">Change Password</button>
+       </form>
+      </div>
+    </div>
+
+    <form id="walkForm">
+      <label class="form-full-width">
+        Are you walking your dog?
+        <select id="walkingStatus" required>
+          <option value="walking">Yes, currently walking</option>
+          <option value="not walking">No, not currently walking</option>
+          <option value="planning to walk">Planning to walk soon</option>
+        </select>
+      </label>
+
+      <label class="form-full-width">
+        Area in Narberth (draw rectangle on map):
+        <input type="text" id="location" required maxlength="50" placeholder="E.g. Narberth Moor, Bloomfield Park" list="narberthLocations" />
+        <datalist id="narberthLocations">
+          <option value="Narberth Moor"></option>
+          <option value="Bloomfield Park"></option>
+          <option value="Narberth High Street"></option>
+          <option value="Narberth Castle"></option>
+          <option value="Narberth Playing Fields"></option>
+          <option value="Narberth Woods"></option>
+          <option value="Narberth Dog Park"></option>
+        </datalist>
+      </label>
+      <div id="map" style="height: 250px; border-radius: 10px; margin-bottom: 1rem;"></div>
+      <input type="hidden" id="mapLat" />
+      <input type="hidden" id="mapLng" />
+
+      <label class="form-full-width">
+        Walk Date:
+        <input type="text" id="walkDate" required class="styled-date">
+
+        <!-- Flatpickr -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+        
+        <script>
+          flatpickr("#walkDate", {
+            dateFormat: "d-m-Y",   // matches the format you had
+            defaultDate: "today"
+          });
+        </script>
+      </label>
+
+      <label>
+        Start Time:
+        <input type="time" id="startTime" required />
+      </label>
+
+      <label>
+        Planned Walk Length: 
+        <input type="range" id="walkDuration" min="15" max="120" step="1" value="30">
+        <span id="durationLabel">30 minutes</span>
+      </label>
+
+      <script>
+        function updateWalkDuration(value) {
+          const durationLabel = document.getElementById('durationLabel');
+          const minutes = parseInt(value);
+          const hours = Math.floor(minutes / 60);
+          const remainingMinutes = minutes % 60;
+
+          if (hours > 0) {
+            durationLabel.textContent =
+              `${hours} hour${hours > 1 ? 's' : ''} ${remainingMinutes} minute${remainingMinutes !== 1 ? 's' : ''}`;
+          } else {
+            durationLabel.textContent =
+              `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+          }
+        }
+
+        // run once DOM is ready
+        document.addEventListener("DOMContentLoaded", () => {
+          const durationSlider = document.getElementById('walkDuration');
+          updateWalkDuration(durationSlider.value); // set initial label
+          durationSlider.addEventListener('input', (e) => {
+            updateWalkDuration(e.target.value);
+          });
+        });
+      </script>
+
+
+      <label>
+        Dog Status
+        <select id="dogStatus" required>
+          <option value="Friendly">Friendly with dogs and people</option>
+          <option value="Nervous">Nervous/Shy</option>
+          <option value="Not Friendly">Not friendly</option>
+          <option value="Service Dog">Service Dog</option>
+          <option value="In Training">In Training</option>
+        </select>
+      </label>
+
+      <label>
+        Safety Status
+        <select id="safetyOptions" required>
+          <option value="safe">Safe area</option>
+          <option value="unsafe">Unsafe</option>
+          <option value="unknown">Unknown</option>
+          <option value="busy">Very busy</option>
+        </select>
+      </label>
+
+      <label class="form-full-width">
+        Other Notes (optional):
+        <textarea id="otherNotes" maxlength="200" placeholder="E.g., 'We'll be wearing red bandana'"></textarea>
+      </label>
+
+      <button type="submit"><i class="fas fa-paper-plane"></i> Submit Status</button>
+    </form>
+
+
+    <div id="loadingSpinner" class="spinner" style="display:none;"></div>
+
+    <div class="status-header-row">
+      <h2 style="margin: 0;"><i class="fas fa-list-ul"></i> Current Dog Walk Statuses</h2>
+      <button id="openFilterModal" class="filter" style="margin-left:auto;">
+        <i class="fas fa-filter"></i> Filter
+      </button>
+    </div>
+
+    <!-- Filter Modal -->
+    <div id="filterModal" class="modal hidden">
+      <div class="modal-content">
+        <span id="closeFilterModal" class="close">&times;</span>
+        <h3>Filter Dog Walk Statuses</h3>
+        <div class="filter-controls">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="walking">Walking</button>
+          <button class="filter-btn" data-filter="not walking">Not Walking</button>
+          <button class="filter-btn" data-filter="planning to walk">Planning to walk</button>
+          <button class="filter-btn" data-filter="friendly">Friendly Dogs</button>
+          <button class="filter-btn" data-filter="service dog">Service Dogs</button>
+          <button class="filter-btn" id="myStatusesBtn" data-filter="my">My Statuses</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Wrap status list in container with background box -->
+    <div class="status-cards-box">
+      <div id="statusList" class="status-cards"></div>
+    </div>
+
+    <div id="emptyState" class="text-center mt-20 hidden">
+      <i class="fas fa-dog" style="font-size: 3rem; color: var(--primary-color);"></i>
+      <h3>No walk statuses found in Narberth</h3>
+      <p>Be the first to submit one!</p>
+    </div>
+  </div>
+
+  <div id="notification" class="notification" role="alert">
+    <i class="fas fa-check-circle"></i>
+    <span id="notifText">Status submitted successfully!</span>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+
+  <!-- Firebase and App Logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import {
+      getDatabase, ref, push, onChildAdded, update, child, get, set, remove
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMuOymY5KniYJgg51vkhcYWxXeyXAyFk0",
+      authDomain: "pet-paths.firebaseapp.com",
+      databaseURL: "https://pet-paths-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "pet-paths",
+      storageBucket: "pet-paths.firebasestorage.app",
+      messagingSenderId: "5202022310",
+      appId: "1:5202022310:web:55991fbd2be58294bfc967",
+      measurementId: "G-SW8L37HRVV"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const statusRef = ref(db, 'narberthDogWalkStatuses');
+    const accountsRef = ref(db, 'accounts');
+
+    const walkForm = document.getElementById('walkForm');
+    const statusListEl = document.getElementById('statusList');
+    const emptyStateEl = document.getElementById('emptyState');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    let currentFilter = 'all';
+    let loggedInUser = localStorage.getItem('dogWalkUser') || "Anonymous";
+    const loadedStatuses = new Map(); // key => { data, element }
+
+    document.getElementById('accountInfo').textContent = `Logged in as: ${loggedInUser}`;
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('dogWalkUser');
+      loggedInUser = "Anonymous";
+      document.getElementById('accountInfo').textContent = "Not logged in";
+      showNotification("Logged out.");
+      applyFilter();
+    });
+
+    walkForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loadingSpinner.style.display = 'block';
+
+      const username = localStorage.getItem('dogWalkUser') || "Anonymous";
+
+      // Get start time and planned duration
+      const startTimeStr = document.getElementById('startTime').value;
+      const durationMinutes = parseInt(document.getElementById('walkDuration').value);
+
+      // Check if duration is selected
+      if (!startTimeStr || isNaN(durationMinutes)) {
+        showNotification("Please select a start time and walk length.");
+        loadingSpinner.style.display = 'none';
+        return;
+      }
+
+      // Calculate end time
+      const [startHour, startMinute] = startTimeStr.split(':').map(Number);
+      const startDate = new Date();
+      startDate.setHours(startHour, startMinute);
+      startDate.setMinutes(startMinute);
+      const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
+      const endTime = endDate.toTimeString().slice(0, 5); // Format: HH:MM
+
+      const data = {
+        status: document.getElementById('walkingStatus').value,
+        location: document.getElementById('location').value.trim(),
+        startTime: document.getElementById('startTime').value,
+        duration: document.getElementById('walkDuration').value,  // <-- slider
+        dogStatus: document.getElementById('dogStatus').value,
+        safety: document.getElementById('safetyOptions').value,
+        notes: document.getElementById('otherNotes').value.trim(),
+        lat: document.getElementById('mapLat').value || null,
+        lng: document.getElementById('mapLng').value || null,
+        timestamp: Date.now(),
+        user: username
+      };
+
+      try {
+        await push(statusRef, data); // ✅ This is the one that submits
+        showNotification("Status submitted successfully!");
+        walkForm.reset();
+      } catch (error) {
+        console.error('Error submitting status:', error);
+        showNotification("Error submitting status. Please try again.");
+      } finally {
+        loadingSpinner.style.display = 'none';
+      }
+    });
+
+    // Update loggedInUser on login
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        if (!username || !password) return showNotification("Username and password required.");
+
+        const snapshot = await get(child(accountsRef, username));
+        if (!snapshot.exists() || snapshot.val().password !== password) {
+          showNotification("Invalid username or password.");
+          return;
+        }
+        showNotification(`Welcome, ${username}!`);
+        localStorage.setItem('dogWalkUser', username);
+        loggedInUser = username;
+        loginForm.reset();
+      });
+    }
+
+    // Add delete button if status belongs to user
+    function createStatusElement(data, key) {
+      const el = document.createElement('div');
+      el.className = 'status-entry';
+      el.dataset.status = data.status.toLowerCase();
+      el.dataset.dogStatus = data.dogStatus.toLowerCase();
+      el.dataset.user = data.user || "Anonymous";
+      el.dataset.key = key;
+
+      let mapDiv = '';
+      if (data.lat && data.lng) {
+        // If area, show bounds as rectangle
+        const [swLat, neLat] = data.lat.split(',');
+        const [swLng, neLng] = data.lng.split(',');
+        const mapId = `status-map-${key}`;
+        mapDiv = `<div id="${mapId}" class="status-mini-map" style="height:120px;border-radius:8px;margin:8px 0;"></div>`;
+        // Initialize the map after adding to DOM
+        setTimeout(() => {
+          renderStatusMap(mapId, swLat, swLng, neLat, neLng);
+        }, 0);
+      }
+
+      function isAdmin() {
+        return loggedInUser && loggedInUser.toLowerCase() === 'admin';
+      }
+
+      const isOwner = data.user === loggedInUser && loggedInUser !== "Anonymous";
+
+      let deleteBtn = '';
+
+      if (isOwner || isAdmin()) {
+        deleteBtn = `<button class="delete-status-btn" data-key="${key}" style="float:right;background:#c2185b;color:#fff;border:none;border-radius:5px;padding:4px 10px;cursor:pointer;">Delete</button>`;
+      }
+
+      function calculateEndTime(startTime, durationMinutes) {
+        if (!startTime) return "";
+        const [hours, minutes] = startTime.split(":").map(Number);
+        const start = new Date();
+        start.setHours(hours, minutes, 0, 0);
+
+        const end = new Date(start.getTime() + durationMinutes * 60000);
+        const hh = String(end.getHours()).padStart(2, "0");
+        const mm = String(end.getMinutes()).padStart(2, "0");
+
+        return `${hh}:${mm}`;
+      }
+
+      el.innerHTML = `
+        <div class="status-card">
+          <div class="status-card-header">
+            <span class="status-type ${data.status.replace(/\s+/g, '-').toLowerCase()}" id="status-text-${key}">
+              <i class="${getStatusIcon(data.status)} status-icon"></i> ${data.status}
+            </span>
+            <span class="status-user">
+              <i class="fas fa-user"></i> ${data.user || "Anonymous"}
+            </span>
+            <div class="status-actions">
+              ${deleteBtn}
+            </div>
+          </div>
+          <div class="status-card-body">
+            <div class="status-location">
+              <i class="fas fa-map-marker-alt"></i> <strong>Location:</strong> ${data.location}
+            </div>
+            ${mapDiv}
+            <div class="status-details-row">
+              <div><i class="far fa-clock"></i> <strong>Start:</strong> ${data.startTime}</div>
+              <div><i class="fas fa-hourglass-end"></i> <strong>End:</strong> ${calculateEndTime(data.startTime, data.duration)}</div>
+              <div><i class="fas fa-dog"></i> <strong>Dog:</strong> ${data.dogStatus}</div>
+              <div><i class="fas fa-shield-alt"></i> <strong>Safety:</strong> ${data.safety}</div>
+            </div>
+            ${data.notes ? `<div class="status-notes"><i class="fas fa-sticky-note"></i> <strong>Notes:</strong> ${data.notes}</div>` : ''}
+          </div>
+        </div>
+      `;
+
+      return el;
+    }
+
+    // Attach listener with admin confirmation
+    statusListEl.addEventListener('click', async (e) => {
+      if (e.target.classList.contains('delete-status-btn')) {
+        const key = e.target.dataset.key;
+        const statusEl = e.target.closest('.status-entry');
+        const owner = statusEl?.dataset.user || "Anonymous";
+
+        const adminDeletingOther = 
+          loggedInUser && loggedInUser.toLowerCase() === 'admin' && owner !== loggedInUser;
+
+        if (adminDeletingOther) {
+          const proceed = confirm(`You are deleting a status submitted by "${owner}". Are you sure?`);
+          if (!proceed) return;
+        }
+
+        try {
+          await remove(child(statusRef, key));
+          statusEl.remove();
+          showNotification("Status deleted.");
+          applyFilter();
+        } catch (err) {
+          showNotification("Failed to delete status.");
+        }
+      }
+    });
+
+
+    // Helper to render a mini Leaflet map in a card
+    function renderStatusMap(mapId, swLat, swLng, neLat, neLng) {
+      const map = L.map(mapId, {
+        attributionControl: false,
+        zoomControl: false,
+        dragging: false,
+        scrollWheelZoom: false,
+        doubleClickZoom: false,
+        boxZoom: false,
+        keyboard: false,
+        tap: false,
+        touchZoom: false
+      }).setView([(parseFloat(swLat) + parseFloat(neLat)) / 2, (parseFloat(swLng) + parseFloat(neLng)) / 2], 15);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        interactive: false
+      }).addTo(map);
+
+      // Draw rectangle for area
+      const bounds = [
+        [parseFloat(swLat), parseFloat(swLng)],
+        [parseFloat(neLat), parseFloat(neLng)]
+      ];
+      L.rectangle(bounds, { color: "#3a6ea5", weight: 2, fillOpacity: 0.2 }).addTo(map);
+      map.fitBounds(bounds, { padding: [5, 5] });
+    }
+
+    function getStatusIcon(status) {
+      switch (status.toLowerCase()) {
+        case 'walking': return 'fas fa-walking';
+        case 'not walking': return 'fas fa-home';
+        case 'planning to walk': return 'fas fa-clock';
+        default: return 'fas fa-paw';
+      }
+    }
+
+    function updateEmptyState() {
+      const visible = [...statusListEl.children].some((el) => el.style.display !== 'none');
+      emptyStateEl.classList.toggle('hidden', visible);
+    }
+
+    function applyFilter() {
+      [...statusListEl.children].forEach(el => {
+        let match = false;
+        if (currentFilter === 'all') match = true;
+        else if (currentFilter === 'my') match = (el.dataset.user === loggedInUser);
+        else match = el.dataset.status === currentFilter || el.dataset.dogStatus.includes(currentFilter);
+        el.style.display = match ? 'block' : 'none';
+      });
+      updateEmptyState();
+    }
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter.toLowerCase();
+        applyFilter();
+      });
+    });
+
+    document.getElementById('myStatusesBtn').addEventListener('click', () => {
+      currentFilter = 'my';
+      applyFilter();
+    });
+
+    function showNotification(msg) {
+      const notif = document.getElementById('notification');
+      document.getElementById('notifText').textContent = msg;
+      notif.classList.add('show');
+      setTimeout(() => notif.classList.remove('show'), 3000);
+    }
+
+    setInterval(() => {
+      const now = new Date();
+
+      loadedStatuses.forEach(({ data, element }, key) => {
+        const start = new Date(`${data.date}T${data.startTime}`);
+        const end = new Date(`${data.date}T${data.endTime}`);
+        const statusSpan = document.getElementById(`status-text-${key}`);
+
+        if (!statusSpan) return;
+
+        let newStatus = "not walking";
+        if (now >= start && now <= end) {
+          newStatus = "walking";
+        } else if (now > end) {
+          // Walk is over, hide status
+          element.remove();
+          loadedStatuses.delete(key);
+          applyFilter();
+          return;
+        }
+
+        // Only update if changed
+        const oldStatus = data.status;
+        if (newStatus !== oldStatus) {
+          data.status = newStatus;
+          statusSpan.className = `status-type ${newStatus.replace(/\s+/g, '-').toLowerCase()}`;
+          statusSpan.innerHTML = `<i class="${getStatusIcon(newStatus)} status-icon"></i> ${newStatus}`;
+        }
+      });
+    }, 60 * 1000); // every 60 seconds
+
+
+    onChildAdded(statusRef, (snapshot) => {
+      const data = snapshot.val();
+      const key = snapshot.key;
+
+      const now = new Date();
+      const start = new Date(`${data.date}T${data.startTime}`);
+      const end = new Date(`${data.date}T${data.endTime}`);
+
+      if (now > end) return;
+
+      // Calculate current status
+      if (now < start) {
+        data.status = "not walking";
+      } else if (now >= start && now <= end) {
+        data.status = "walking";
+      }
+
+      const el = createStatusElement(data, key);
+      statusListEl.prepend(el);
+      loadedStatuses.set(key, { data, element: el }); // track for later updates
+      applyFilter();
+    });
+
+    // Delete status handler
+    statusListEl.addEventListener('click', async (e) => {
+      if (e.target.classList.contains('delete-status-btn')) {
+        const key = e.target.dataset.key;
+        try {
+          await remove(child(statusRef, key));
+          e.target.closest('.status-entry').remove();
+          showNotification("Status deleted.");
+          applyFilter();
+        } catch (err) {
+          showNotification("Failed to delete status.");
+        }
+      }
+    });
+
+    // --- Registration ---
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+      registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('regUsername').value.trim();
+        const password = document.getElementById('regPassword').value;
+        if (!username || !password) return showNotification("Username and password required.");
+
+        // Check if username exists
+        const snapshot = await get(child(accountsRef, username));
+        if (snapshot.exists()) {
+          showNotification("Username already taken.");
+          return;
+        }
+        await set(child(accountsRef, username), { username, password });
+        showNotification("Account created! You can now sign in.");
+        registerForm.reset();
+      });
+    }
+
+    // --- Authentication Modal ---
+    const authModal = document.getElementById('authModal');
+    const openAuthModalBtn = document.getElementById('openAuthModal');
+    const closeAuthModalBtn = document.getElementById('closeAuthModal');
+
+    openAuthModalBtn.addEventListener('click', () => {
+      authModal.classList.remove('hidden');
+    });
+    closeAuthModalBtn.addEventListener('click', () => {
+      authModal.classList.add('hidden');
+    });
+    window.addEventListener('click', (e) => {
+      if (e.target === authModal) authModal.classList.add('hidden');
+    });
+
+    // --- Filter Modal Logic ---
+    const filterModal = document.getElementById('filterModal');
+    const openFilterModalBtn = document.getElementById('openFilterModal');
+    const closeFilterModalBtn = document.getElementById('closeFilterModal');
+
+    openFilterModalBtn.addEventListener('click', () => {
+      filterModal.classList.remove('hidden');
+    });
+    closeFilterModalBtn.addEventListener('click', () => {
+      filterModal.classList.add('hidden');
+    });
+    window.addEventListener('click', (e) => {
+      if (e.target === filterModal) filterModal.classList.add('hidden');
+    });
+
+    // Theme switching logic
+    const themeBtn = document.getElementById('themeSwitcherBtn');
+    const themePopup = document.getElementById('themePopup');
+    const themeOptions = document.querySelectorAll('.theme-option');
+
+    themeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      themePopup.classList.toggle('show');
+    });
+
+    document.body.addEventListener('click', () => {
+      themePopup.classList.remove('show');
+    });
+
+    themePopup.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+
+    themeOptions.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const theme = btn.dataset.theme;
+        document.body.className = '';
+        if (theme !== 'default') document.body.classList.add(theme);
+        localStorage.setItem('dogWalkTheme', theme);
+        themePopup.classList.remove('show');
+      });
+    });
+
+    const savedTheme = localStorage.getItem('dogWalkTheme');
+    if (savedTheme && savedTheme !== 'default') {
+      document.body.classList.add(savedTheme);
+    }
+
+    // Hamburger menu logic
+    document.getElementById('hamburgermenu').addEventListener('click', function() {
+      this.classList.toggle('active');
+      document.getElementById('sideMenu').classList.toggle('open');
+    });
+
+    // Service Worker registration
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(() => console.log("✅ Service Worker Registered"));
+    }
+
+    // --- Leaflet Map Setup ---
+    const map = L.map('map').setView([51.797, -4.742], 15); // Narberth center
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    let drawnArea;
+    const drawControl = new L.Control.Draw({
+      draw: {
+        marker: false,
+        polyline: false,
+        circle: false,
+        circlemarker: false,
+        polygon: false,
+        rectangle: {
+          shapeOptions: {
+            color: '#3a6ea5'
+          }
+        }
+      },
+      edit: {
+        featureGroup: new L.FeatureGroup()
+      }
+    });
+    map.addControl(drawControl);
+
+    const drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
+
+    map.on(L.Draw.Event.CREATED, function (e) {
+      drawnItems.clearLayers();
+      drawnArea = e.layer;
+      drawnItems.addLayer(drawnArea);
+      // Save bounds to hidden input
+      const bounds = drawnArea.getBounds();
+      document.getElementById('mapLat').value = bounds.getSouthWest().lat + ',' + bounds.getNorthEast().lat;
+      document.getElementById('mapLng').value = bounds.getSouthWest().lng + ',' + bounds.getNorthEast().lng;
+    });
+
+    // Optional: If user enters a known location, pan map there
+    document.getElementById('location').addEventListener('change', function() {
+      const loc = this.value.toLowerCase();
+      const locations = {
+        "narberth moor": [51.7978, -4.7422],
+        "bloomfield park": [51.8002, -4.7410],
+        "narberth high street": [51.7992, -4.7428],
+        "narberth castle": [51.7970, -4.7445],
+        "narberth playing fields": [51.8008, -4.7450],
+        "narberth woods": [51.7960, -4.7460],
+        "narberth dog park": [51.7985, -4.7405]
+      };
+      if (locations[loc]) {
+        map.setView(locations[loc], 16);
+        if (marker) marker.setLatLng(locations[loc]);
+        else marker = L.marker(locations[loc]).addTo(map);
+        document.getElementById('mapLat').value = locations[loc][0];
+        document.getElementById('mapLng').value = locations[loc][1];
+      }
+    });
+  </script>
+</body>
+</html>
