@@ -30,10 +30,7 @@
     }
 
     @keyframes fadeIn {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     h1 {
@@ -47,7 +44,6 @@
       gap: 0.4em;
     }
 
-    /* Typing-style bouncing dots */
     .loading-dots {
       display: inline-flex;
       gap: 0.25em;
@@ -70,25 +66,41 @@
       to   { transform: translateY(-6px); opacity: 1; }
     }
 
-    /* Smooth gradient spinner */
+    /* Original spinner container */
     .spinner {
       width: 70px;
       height: 70px;
       margin: 20px auto;
       border-radius: 50%;
+      position: relative;
       background: conic-gradient(
         from 0deg,
         var(--primary-color, #3a6ea5) 0%,
-        rgba(58,110,165,0) 70%
+        rgba(58,110,165,0.6) 0%,
+        rgba(58,110,165,0) 100%
       );
       -webkit-mask: radial-gradient(farthest-side, #0000 calc(100% - 8px), #000 0);
               mask: radial-gradient(farthest-side, #0000 calc(100% - 8px), #000 0);
-      animation: spin 1s linear infinite;
+      animation: spin 1s linear infinite; /* remove reverse */
+    }
+
+    /* Rounded leading edge */
+    .spinner-cap {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 16px; /* match thickness */
+      height: 16px;
+      background: var(--primary-color, #3a6ea5);
+      border-radius: 50%;
+      transform: translate(-50%, -50%) rotate(0deg) translateY(-30px); /* move out to edge of spinner */
+      transform-origin: 50% 50%;
+      animation: spin 1s linear infinite; /* match spinner direction */
     }
 
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(-360deg); }
     }
 
     p {
@@ -127,10 +139,16 @@
         <span></span><span></span><span></span>
       </span>
     </h1>
-    <div class="spinner"></div>
+
+    <!-- Spinner with rounded leading edge -->
+    <div class="spinner">
+      <div class="spinner-cap"></div>
+    </div>
+
     <p>You’ll be taken to the Doggy Playdate page shortly.</p>
     <a href="../doggy-playdate.html">Go now</a>
   </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 </body>
 </html>
