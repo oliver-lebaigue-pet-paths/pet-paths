@@ -117,14 +117,27 @@
                 margin: 0 auto;        /* center it */
             }
         }
+
+        .accountmodal {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            width: 250px;
+            }
+
+            .accountmodal:hover {
+            background-color: #0264cc;
+            }
     </style>
 </head>
 <body>
     <div id="sideMenu">
         <h2><i class="fas fa-paw"></i> Pet Paths</h2>
-        <a href="index.html" class="active"><i class="fas fa-home"></i> Home</a>
-        <a href="map.html" class="active"><i class="fas fa-map-marker-alt"></i> Map</a>
-        <a href="doggy-playdate.html" class="active"><i class="fas fa-dog"></i> Doggy Playdates</a>
         <a href="feedback.html" class="active">Give Feedback!</a>
         <div class="sidebar-theme-switcher">
             <button id="themeSwitcherBtn" class="theme-switcher-btn" style="margin-bottom: 1rem;">
