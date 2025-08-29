@@ -541,10 +541,7 @@
   <div id="sideMenu">
     <h2><i class="fas fa-paw"></i> Pet Paths</h2>
     <a href="index.html" class="active"><i class="fas fa-home"></i> Home</a>
-    <a href="maps/status-map.html" class="active"><i class="fas fa-map-marker-alt"></i>Status Map</a>
     <a href="maps/doggy-playdate-map.html" class="active"><i class="fas fa-walking"></i>Playdates Map</a>
-    <a href="#submit-playdate" class="active"><i class="fas fa-calendar-plus"></i> Propose Playdate</a>
-    <a href="doggy-playdate.html" class="active"><i class="fas fa-dog"></i> Doggy Playdates</a>
     <a href="#" id="openMyChatsModalBtn">
       <i class="fas fa-comments"></i> My Chats
       <span id="myChatsNotificationBadge">0</span>
@@ -607,29 +604,170 @@
     <h1><i class="fas fa-dog"></i> Doggy Playdate Finder</h1>
     <p>Connect with other dog owners in Narberth to arrange fun playdates for your furry friends!</p>
 
-    <!-- Registration and Login Modal (re-used from index.html) -->
+    <!-- Main Modal with options -->
     <div id="authModal" class="modal hidden">
-      <div class="modal-content">
+        <div class="modal-content">
         <span id="closeAuthModal" class="close">&times;</span>
-        <form id="registerForm" style="margin-bottom:1rem;">
-          <h3>Create Account</h3>
-          <input type="text" id="regUsername" placeholder="Username" required />
-          <input type="password" id="regPassword" placeholder="Password" required />
-          <button type="submit">Register</button>
-        </form>
-        <form id="loginForm">
-          <h3>Sign In</h3>
-          <input type="text" id="loginUsername" placeholder="Username" required />
-          <input type="password" id="loginPassword" placeholder="Password" required />
-          <button type="submit">Login</button>
-        </form>
-        <form id="changePasswordForm" style="margin-top:1rem;">
-          <h3>Change Password</h3>
-         <input type="password" id="newPassword" placeholder="New Password" required />
-         <button type="submit">Change Password</button>
-       </form>
-      </div>
+        <h3>Account Options</h3>
+        <button id="openSignIn" class="accountmodal">Sign In</button>
+        <button id="openSignUp" class="accountmodal">Sign Up</button>
+        <button id="openChangePassword" class="accountmodal">Change Password</button>
+        </div>
     </div>
+
+    <!-- Sign In Modal -->
+    <div id="signInModal" class="modal hidden">
+        <div class="modal-content">
+        <span class="close" data-close="signInModal">&times;</span>
+        <h3>Sign In</h3>
+        <form id="loginForm">
+            <input type="text" id="loginUsername" placeholder="Username" required />
+            <input type="password" id="loginPassword" placeholder="Password" required />
+            <button type="submit">Login</button>
+        </form>
+        <button class="backBtn" data-back="authModal">Back</button>
+        </div>
+    </div>
+
+    <!-- Sign Up Modal -->
+    <div id="signUpModal" class="modal hidden">
+        <div class="modal-content">
+        <span class="close" data-close="signUpModal">&times;</span>
+        <h3>Create Account</h3>
+        <form id="registerForm">
+            <input type="text" id="regUsername" placeholder="Username" required />
+            <input type="password" id="regPassword" placeholder="Password" required />
+            <button type="submit">Register</button>
+        </form>
+        <button class="backBtn" data-back="authModal">Back</button>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="changePasswordModal" class="modal hidden">
+        <div class="modal-content">
+        <span class="close" data-close="changePasswordModal">&times;</span>
+        <h3>Change Password</h3>
+        <form id="changePasswordForm">
+            <input type="password" id="newPassword" placeholder="New Password" required />
+            <button type="submit">Change Password</button>
+        </form>
+        <button class="backBtn" data-back="authModal">Back</button>
+        </div>
+    </div>
+
+    <style>
+        .modal {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        }
+        .modal.hidden {
+        display: none;
+        }
+        .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        width: 320px;
+        max-width: 90%;
+        position: relative;
+        text-align: center;
+        }
+        .close {
+        position: absolute;
+        top: 0.5rem;
+        right: 1rem;
+        font-size: 1.5rem;
+        cursor: pointer;
+        }
+        input {
+        width: 100%;
+        margin: 0.5rem 0 1rem;
+        padding: 0.5rem;
+        font-size: 1rem;
+        }
+        button {
+        padding: 0.6rem 1rem;
+        font-size: 1rem;
+        margin: 0.5rem 0;
+        cursor: pointer;
+        }
+        .backBtn {
+        background: none;
+        border: none;
+        color: #007bff;
+        text-decoration: underline;
+        margin-top: 1rem;
+        }
+    </style>
+
+    <script>
+        // Show the main auth modal initially or when needed
+        function openAuthModal() {
+        showModal('authModal');
+        }
+
+        // Utility to show a modal by id and hide others
+        function showModal(idToShow) {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            if (modal.id === idToShow) {
+            modal.classList.remove('hidden');
+            } else {
+            modal.classList.add('hidden');
+            }
+        });
+        }
+
+        // Close modal by id
+        function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+        }
+
+        // Event listeners for main modal buttons
+        document.getElementById('openSignIn').addEventListener('click', () => {
+        showModal('signInModal');
+        });
+        document.getElementById('openSignUp').addEventListener('click', () => {
+        showModal('signUpModal');
+        });
+        document.getElementById('openChangePassword').addEventListener('click', () => {
+        showModal('changePasswordModal');
+        });
+
+        // Close buttons
+        document.querySelectorAll('.close').forEach(btn => {
+        btn.addEventListener('click', e => {
+            const modalId = e.target.getAttribute('data-close') || e.target.parentElement.parentElement.id;
+            closeModal(modalId);
+        });
+        });
+
+        // Back buttons to return to main modal
+        document.querySelectorAll('.backBtn').forEach(btn => {
+        btn.addEventListener('click', e => {
+            const backTo = e.target.getAttribute('data-back');
+            showModal(backTo);
+        });
+        });
+
+        // Example: open main modal on page load or on some button click
+        // openAuthModal();
+
+        // Optional: close modal if clicking outside modal-content
+        document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', e => {
+            if (e.target === modal) {
+            closeModal(modal.id);
+            }
+        });
+        });
+    </script>
 
     <!-- Chat Modal -->
     <div id="chatModal" class="modal hidden chat-modal">
