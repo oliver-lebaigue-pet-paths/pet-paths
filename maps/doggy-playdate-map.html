@@ -52,6 +52,22 @@
     #sideMenu a.github-link {
       margin-top: auto; /* Push to bottom */
     }
+
+    .accountmodal {
+      display: inline-block;
+      background-color: var(--accent-color);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+      width: 250px;
+    }
+
+    .accountmodal:hover {
+      background-color: #0264cc;
+    }
   </style>
 </head>
 <body>
@@ -127,9 +143,9 @@
     <div class="modal-content">
       <span id="closeAuthModal" class="close">&times;</span>
       <h3>Account Options</h3>
-      <button id="openSignIn">Sign In</button>
-      <button id="openSignUp">Sign Up</button>
-      <button id="openChangePassword">Change Password</button>
+      <button id="openSignIn" class="accountmodal">Sign In</button>
+      <button id="openSignUp" class="accountmodal">Sign Up</button>
+      <button id="openChangePassword" class="accountmodal">Change Password</button>
     </div>
   </div>
 
