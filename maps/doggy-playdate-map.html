@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pet Paths Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="../styles.css"/>
+  <style>
+    body { margin:0; font-family:Roboto,sans-serif; }
+    #map { height: 100vh; width: 100vw; }
+    .legend {
+      background: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      font-size: 1rem;
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      z-index: 1000;
+    }
+    .legend span {
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    .main-content {
+      margin-left: 250px;
+      padding: 0;
+      position: relative;
+      height: 100vh;
+    }
+    .theme-color-preview {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    @media (max-width: 768px) {
+      .main-content { margin-left: 0; }
+      #map { height: calc(100vh - 60px); }
+    }
+
+    /* Sidebar minimal adjustments if needed */
+    .status-type { display: none; } /* avoid collisions if reused styles */
+    
+    #sideMenu a.github-link {
+      margin-top: auto; /* Push to bottom */
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar copied/adapted from index.html -->
+  <div id="sideMenu">
+    <h2><i class="fas fa-paw"></i> Pet Paths</h2>
+    <a href="index.html" class="active"><i class="fas fa-home"></i> Home</a>
+    <a href="home.html" class="active"><i class="fas fa-map-marker-alt"></i> Submit status</a>
+    <a href="doggy-playdate.html" class="active"><i class="fas fa-dog"></i> Doggy Playdates</a>
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdu2G3Sy30ToJL2rWNHo_mKKItRnvlRmcFv78pM2Y-q0e1jYQ/viewform?usp=header" class="active">Give Feedback!</a>
+    <div class="sidebar-theme-switcher">
+      <button id="themeSwitcherBtn" class="theme-switcher-btn" style="margin-bottom: 1rem;">
+        <i class="fas fa-palette"></i> Theme Options <i class="fas fa-chevron-down"></i>
+      </button>
+      <div id="themePopup" class="theme-popup">
+        <button class="theme-option" data-theme="default"><span class="theme-color-preview" style="background:#3a6ea5"></span> Ocean Blue</button>
+        <button class="theme-option" data-theme="high-contrast"><span class="theme-color-preview" style="background:#000; border:1px solid #fff;"></span> High Contrast</button>
+        <button class="theme-option" data-theme="forest"><span class="theme-color-preview" style="background:#2e7d32"></span> Forest Green</button>
+        <button class="theme-option" data-theme="sunset"><span class="theme-color-preview" style="background:#e65100"></span> Sunset Orange</button>
+        <button class="theme-option" data-theme="lavender"><span class="theme-color-preview" style="background:#7e57c2"></span> Lavender</button>
+        <button class="theme-option" data-theme="rose"><span class="theme-color-preview" style="background:#c2185b"></span> Rose Pink</button>
+        <button class="theme-option" data-theme="slate"><span class="theme-color-preview" style="background:#455a64"></span> Cool Slate</button>
+        <button class="theme-option" data-theme="coffee"><span class="theme-color-preview" style="background:#5d4037"></span> Coffee</button>
+        <button class="theme-option" data-theme="terminal"><span class="theme-color-preview" style="background:#00e676"></span> Terminal</button>
+      </div>
+    </div>
+    <br>
+    <button id="openAuthModal" class="theme-switcher-btn" style="margin-bottom:1rem;">
+      <i class="fas fa-user"></i> Account
+    </button>
+
+    <div id="accountInfo" style="margin:1rem 0; font-weight:bold;"></div>
+    <button id="logoutBtn" class="theme-switcher-btn" style="margin-bottom:1rem;">Logout</button>
+
+    <a href="https://github.com/oliver-lebaigue-pet-paths/pet-paths" target="_blank" 
+      style="display:inline-flex; align-items:center; padding:8px 12px; background:#24292e; color:white; text-decoration:none; border-radius:6px; font-family:sans-serif;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="white" viewBox="0 0 16 16" style="margin-right:8px;">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 
+          7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49
+          -2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+          -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82
+          .72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07
+          -1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+          -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82
+          .64-.18 1.32-.27 2-.27s1.36.09 2 .27
+          c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12
+          .51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95
+          .29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2
+          0 .21.15.46.55.38A8.013 8.013 0 0016 8
+          c0-4.42-3.58-8-8-8z"/>
+      </svg>
+      View on GitHub
+    </a>
+  </div>
+
+  <!-- Hamburger Menu -->
+  <div id="hamburgermenu" aria-label="Toggle navigation menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <div class="main-content">
+    <div id="map"></div>
+    <div class="legend">
+      <span><img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png" width="20" /> Friendly</span>
+      <span><img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png" width="20" /> Not Friendly</span>
+    </div>
+  </div>
+
+  <!-- Account/Auth Modal (minimal placeholder to match index) -->
+  <div id="authModal" class="modal hidden">
+    <div class="modal-content">
+      <span id="closeAuthModal" class="close">&times;</span>
+      <form id="registerForm" style="margin-bottom:1rem;">
+        <h3>Create Account</h3>
+        <input type="text" id="regUsername" placeholder="Username" required />
+        <input type="password" id="regPassword" placeholder="Password" required />
+        <button type="submit">Register</button>
+      </form>
+      <form id="loginForm">
+        <h3>Sign In</h3>
+        <input type="text" id="loginUsername" placeholder="Username" required />
+        <input type="password" id="loginPassword" placeholder="Password" required />
+        <button type="submit">Login</button>
+      </form>
+      <form id="changePasswordForm" style="margin-top:1rem;">
+        <h3>Change Password</h3>
+        <input type="password" id="newPassword" placeholder="New Password" required />
+        <button type="submit">Change Password</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="notification" class="notification" role="alert" style="display:none;">
+    <i class="fas fa-check-circle"></i>
+    <span id="notifText">Status submitted successfully!</span>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    // Firebase config (same as original map.html)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMuOymY5KniYJgg51vkhcYWxXeyXAyFk0",
+      authDomain: "pet-paths.firebaseapp.com",
+      databaseURL: "https://pet-paths-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "pet-paths",
+      storageBucket: "pet-paths.firebasestorage.app",
+      messagingSenderId: "5202022310",
+      appId: "1:5202022310:web:55991fbd2be58294bfc967",
+      measurementId: "G-SW8L37HRVV"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const statusRef = ref(db, 'narberthDoggyPlaydates');
+
+    // Custom marker icons (for fallback / legend consistency)
+    const greenIcon = new L.Icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+    const redIcon = new L.Icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+
+    const map = L.map('map').setView([51.797, -4.742], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Fetch all statuses and add either rectangles or pins
+    get(statusRef).then(snapshot => {
+      if (!snapshot.exists()) return;
+      const statuses = snapshot.val();
+      Object.values(statuses).forEach(data => {
+        if (data.lat && data.lng) {
+          let isArea = data.lat.includes(',') && data.lng.includes(',');
+          const dogStatusLower = (data.dogStatus || "").toLowerCase();
+          let icon = greenIcon;
+          if (dogStatusLower.includes('not friendly')) icon = redIcon;
+          if (dogStatusLower.includes('friendly')) icon = greenIcon;
+
+          const popup = `
+            <strong>Status:</strong> ${data.status}<br/>
+            <strong>Location:</strong> ${data.location}<br/>
+            ${data.notes ? `<strong>Notes:</strong> ${data.notes}<br/>` : ''}
+            ${isArea ? '' : `<a href="https://www.openstreetmap.org/?mlat=${data.lat}&mlon=${data.lng}#map=18/${data.lat}/${data.lng}" target="_blank">View on Map</a>`}
+          `;
+
+          if (isArea) {
+            // Parse rectangle bounds
+            const [swLat, neLat] = data.lat.split(',').map(s => parseFloat(s.trim()));
+            const [swLng, neLng] = data.lng.split(',').map(s => parseFloat(s.trim()));
+            if (!isNaN(swLat) && !isNaN(neLat) && !isNaN(swLng) && !isNaN(neLng)) {
+              const bounds = [
+                [swLat, swLng],
+                [neLat, neLng]
+              ];
+              const color = dogStatusLower.includes('not friendly') ? '#c2185b' : '#3a6ea5';
+              const rect = L.rectangle(bounds, { color, weight: 2, fillOpacity: 0.2 }).addTo(map);
+              rect.bindPopup(popup);
+            } else {
+              // fallback to marker if parsing fails
+              L.marker([parseFloat(data.lat), parseFloat(data.lng)], { icon }).addTo(map).bindPopup(popup);
+            }
+          } else {
+            // Single point
+            L.marker([parseFloat(data.lat), parseFloat(data.lng)], { icon }).addTo(map).bindPopup(popup);
+          }
+        }
+      });
+    });
+
+    let loggedInUser = localStorage.getItem('dogWalkUser') || "Anonymous";
+
+    document.getElementById('accountInfo').textContent = `Logged in as: ${loggedInUser}`;
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('dogWalkUser');
+      loggedInUser = "Anonymous";
+      document.getElementById('accountInfo').textContent = "Not logged in";
+      showNotification("Logged out.");
+      applyFilter();
+    });
+
+    // Hamburger menu logic (matching index)
+    document.getElementById('hamburgermenu').addEventListener('click', function() {
+      this.classList.toggle('active');
+      document.getElementById('sideMenu').classList.toggle('open');
+    });
+
+    // Theme switching logic (matching index)
+    const themeBtn = document.getElementById('themeSwitcherBtn');
+    const themePopup = document.getElementById('themePopup');
+    const themeOptions = document.querySelectorAll('.theme-option');
+
+    themeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      themePopup.classList.toggle('show');
+    });
+
+    document.body.addEventListener('click', () => {
+      themePopup.classList.remove('show');
+    });
+
+    themePopup.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+
+    themeOptions.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const theme = btn.dataset.theme;
+        document.body.className = '';
+        if (theme !== 'default') document.body.classList.add(theme);
+        localStorage.setItem('dogWalkTheme', theme);
+        themePopup.classList.remove('show');
+      });
+    });
+
+    const savedTheme = localStorage.getItem('dogWalkTheme');
+    if (savedTheme && savedTheme !== 'default') {
+      document.body.classList.add(savedTheme);
+    }
+
+    // Auth modal toggle (minimal)
+    const authModal = document.getElementById('authModal');
+    const openAuthModalBtn = document.getElementById('openAuthModal');
+    const closeAuthModalBtn = document.getElementById('closeAuthModal');
+
+    openAuthModalBtn?.addEventListener('click', () => {
+      authModal.classList.remove('hidden');
+    });
+    closeAuthModalBtn?.addEventListener('click', () => {
+      authModal.classList.add('hidden');
+    });
+    window.addEventListener('click', (e) => {
+      if (e.target === authModal) authModal.classList.add('hidden');
+    });
+
+    // Simple notification helper
+    function showNotification(msg) {
+      const notif = document.getElementById('notification');
+      document.getElementById('notifText').textContent = msg;
+      notif.style.display = 'block';
+      setTimeout(() => { notif.style.display = 'none'; }, 2500);
+    }
+  </script>
+</body>
+</html>

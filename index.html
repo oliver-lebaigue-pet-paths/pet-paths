@@ -64,6 +64,7 @@
             text-decoration: none;
             font-weight: 600;
             transition: background-color 0.3s ease;
+            width: 250px;
         }
 
         .launcher-btn:hover {
@@ -86,6 +87,10 @@
             max-width: 800px;
             margin: 0 auto;
             line-height: 1.6;
+        }
+
+        .fas {
+            font-size: 25px !important; /* change to any size */
         }
 
         /* Responsive Design */
@@ -167,35 +172,24 @@
     <div class="main-content">
         <div class="welcome-section">
             <h1>Welcome to Pet Paths</h1>
-            <p>Your community-driven platform for safer and more enjoyable dog walking experiences. Connect with other pet owners, share real-time updates, and navigate your neighborhood with confidence.</p>
+            <p>We appreciate your vist!</p>
         </div>
 
         <div class="launcher-cards">
             <div class="launcher-card">
-                <i class="fas fa-map-marked-alt"></i>
-                <h3>Interactive Map</h3>
-                <p>Explore real-time updates from other pet owners in your area. See which areas are safe and which to avoid.</p>
-                <a href="map.html" class="launcher-btn">View Map</a>
+                <h3><i class="fas fa-comment-dots" style="padding-right: 30px;"></i>Share Your Walk</h3>
+                <a href="home.html" class="launcher-btn" style="width: 100px !important;">Submit Status</a>
+                <a href="maps/status-map.html" class="launcher-btn" style="width: 100px !important;">View Map</a>
             </div>
 
             <div class="launcher-card">
-                <i class="fas fa-comment-dots"></i>
-                <h3>Share Your Walk</h3>
-                <p>Submit updates about your walking route to help other pet owners stay informed about current conditions.</p>
-                <a href="home.html" class="launcher-btn">Submit Status</a>
+                <h3><i class="fas fa-dog" style="padding-right: 30px;"></i> Doggy Playdates</h3>
+                <a href="doggy-playdate.html" class="launcher-btn" style="width: 100px !important;">Submit Playdate</a>
+                <a href="maps/doggy-playdate-map.html" class="launcher-btn" style="width: 100px !important;">View Map</a>
             </div>
 
             <div class="launcher-card">
-                <i class="fas fa-dog"></i>
-                <h3>Doggy Playdates</h3>
-                <p>Connect with other pet owners to arrange fun playdates for your furry friends in safe, designated areas.</p>
-                <a href="doggy-playdate.html" class="launcher-btn">Find Playdates</a>
-            </div>
-
-            <div class="launcher-card">
-                <i class="fas fa-envelope-open-text"></i>
-                <h3>Give Feedback</h3>
-                <p>Help us improve Pet Paths by sharing your thoughts, suggestions, and reporting any issues you encounter.</p>
+                <h3><i class="fas fa-envelope-open-text" style="padding-right: 30px;"></i> Give Feedback</h3>
                 <a href="feedback.html" class="launcher-btn">Provide Feedback</a>
             </div>
         </div>
