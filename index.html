@@ -107,6 +107,16 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Desktop only */
+        @media (min-width: 768px) {
+            /* Make only this card span full width */
+            #feedback-card {
+                grid-column: 1 / -1;   /* force it to take the full row */
+                width: 1200px;         /* or whatever width you want */
+                margin: 0 auto;        /* center it */
+            }
+        }
     </style>
 </head>
 <body>
@@ -188,7 +198,7 @@
                 <a href="maps/doggy-playdate-map.html" class="launcher-btn" style="width: 100px !important;">View Map</a>
             </div>
 
-            <div class="launcher-card">
+            <div id="feedback-card" class="launcher-card" style="max-width:100%; margin:auto;">
                 <h3><i class="fas fa-envelope-open-text" style="padding-right: 30px;"></i> Give Feedback</h3>
                 <a href="feedback.html" class="launcher-btn">Provide Feedback</a>
             </div>
