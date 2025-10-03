@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Profiles - Pet Paths</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+	<style>
+		body {
+			margin: 0;
+			font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+			background: #f3f3f3;
+			display: flex;
+			flex-direction: column;
+			min-height: 100vh;
+		}
+		.header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding: 15px 20px;
+			background: #fff;
+			font-size: 1.2rem;
+			font-weight: 600;
+			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+			position: relative;
+		}
+		.header .icons {
+			display: flex;
+			gap: 12px;
+			font-size: 1.5rem;
+			cursor: pointer;
+			align-items: center;
+		}
+		.header #signedInUser {
+			font-weight: 500;
+			font-size: 1rem;
+			color: #3a6ea5;
+			user-select: none;
+		}
+
+		.content {
+			flex: 1;
+			padding: 20px 20px 80px 20px; /* bottom padding to avoid footer */
+			max-width: 600px;
+			margin: 0 auto;
+			width: 100%;
+		}
+		.profile-card {
+			background: #fff;
+			border-radius: 16px;
+			box-shadow: 0 3px 12px rgba(60, 60, 60, 0.08);
+			border: 1.5px solid #e0e0de;
+			margin-bottom: 18px;
+			padding: 18px 20px 14px 20px;
+			display: flex;
+			gap: 1.5em;
+			align-items: flex-start;
+			transition: box-shadow 0.2s ease-in-out;
+		}
+		.profile-card:hover {
+			box-shadow: 0 8px 25px rgba(60, 60, 60, 0.12);
+		}
+		.profile-avatar {
+			width: 70px;
+			height: 70px;
+			border-radius: 50%;
+			background: #e0e0de;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 2.8em;
+			color: #3a6ea5;
+			flex-shrink: 0;
+			overflow: hidden;
+		}
+		.profile-avatar img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
+		.profile-info {
+			flex: 1;
+		}
+		.profile-name {
+			font-size: 1.2em;
+			font-weight: 700;
+			color: #3a6ea5;
+			margin-bottom: 6px;
+		}
+		.profile-details-row {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 1.2em;
+			font-size: 1em;
+			margin: 8px 0;
+			color: #555;
+		}
+		.profile-notes {
+			background: #f8f8fa;
+			border-left: 4px solid #3a6ea5;
+			border-radius: 8px;
+			padding: 10px 16px;
+			margin-top: 10px;
+			font-size: 0.95em;
+			color: #444;
+			font-style: italic;
+		}
+		#loadingSpinner,
+		#emptyState {
+			text-align: center;
+			padding: 24px;
+			font-size: 1.1rem;
+			color: #777;
+		}
+		.footer {
+			background: #4a4fcf;
+			display: flex;
+			justify-content: space-around;
+			padding: 14px 0 10px;
+			position: fixed;
+			bottom: 0;
+			width: 100%;
+			z-index: 1002;
+			box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.15);
+		}
+		.footer a {
+			text-decoration: none;
+			color: black;
+			font-size: 24px;
+			flex: 1;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			position: relative;
+			transition: color 0.2s ease;
+		}
+		.footer a.active::before {
+			content: "";
+			width: 50px;
+			height: 50px;
+			background: #4a4fcf;
+			border-radius: 50%;
+			position: absolute;
+			top: -25px;
+			left: 50%;
+			transform: translateX(-50%);
+			z-index: 1;
+		}
+		.footer a.active i {
+			font-size: 30px;
+			transform: translateY(-5px);
+			z-index: 2;
+		}
+		.footer a:hover {
+			color: #2c3abf;
+		}
+
+		/* Modal styling */
+		.modal {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100vw;
+			height: 100vh;
+			background: rgba(0, 0, 0, 0.45);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			z-index: 9999;
+			opacity: 1;
+			transition: opacity 0.3s ease;
+		}
+		.hidden {
+			display: none !important;
+			opacity: 0;
+		}
+		.modal-content {
+			max-width: 420px;
+			width: 90vw;
+			background: white;
+			max-height: 85vh;
+			overflow-y: auto;
+			display: flex;
+			flex-direction: column;
+			border-radius: 20px;
+			box-shadow: 0 8px 28px rgba(60, 60, 60, 0.25);
+			padding: 28px 30px 22px 30px;
+			gap: 1.5em;
+			position: relative;
+		}
+		.modal-content h3 {
+			margin: 0 0 20px;
+			color: #3a6ea5;
+			text-align: center;
+			font-weight: 700;
+			font-size: 1.5rem;
+			user-select: none;
+		}
+		.modal-content label {
+			display: block;
+			font-weight: 600;
+			margin-bottom: 6px;
+			color: #222;
+			font-size: 1rem;
+		}
+		.modal-content input[type="text"],
+		.modal-content input[type="password"] {
+			width: 100%;
+			padding: 10px 14px;
+			border: 1.8px solid #d1d1d1;
+			border-radius: 10px;
+			font-size: 1rem;
+			transition: border-color 0.2s ease;
+			outline-offset: 2px;
+		}
+		.modal-content input[type="text"]:focus,
+		.modal-content input[type="password"]:focus {
+			border-color: #4a4fcf;
+			outline: none;
+		}
+		.modal-content button {
+			margin-top: 14px;
+			background: #4a4fcf;
+			color: white;
+			border: none;
+			border-radius: 12px;
+			font-size: 1.1rem;
+			padding: 12px 0;
+			cursor: pointer;
+			transition: background-color 0.25s ease;
+			font-weight: 700;
+			user-select: none;
+		}
+		.modal-content button:hover {
+			background: #3a3ecf;
+		}
+		.modal-content p {
+			text-align: center;
+			font-size: 0.9rem;
+			color: #666;
+			user-select: none;
+		}
+		.modal-content p a {
+			color: #4a4fcf;
+			text-decoration: none;
+			font-weight: 600;
+			cursor: pointer;
+			transition: color 0.2s ease;
+		}
+		.modal-content p a:hover {
+			color: #3a3ecf;
+		}
+		.close {
+			position: absolute;
+			top: 14px;
+			right: 20px;
+			font-size: 2rem;
+			color: #666;
+			cursor: pointer;
+			user-select: none;
+			transition: color 0.25s ease;
+		}
+		.close:hover {
+			color: #4a4fcf;
+		}
+		.auth-footer-btn {
+			background: #4a4fcf;
+			color: white;
+			border-radius: 12px;
+			padding: 12px 0;
+			font-size: 1.05rem;
+			font-weight: 600;
+			border: none;
+			cursor: pointer;
+			transition: background-color 0.25s ease;
+			user-select: none;
+		}
+		.auth-footer-btn:hover {
+			background: #3a3ecf;
+		}
+		.signout-btn {
+			background: #d9534f;
+			margin-top: 0;
+		}
+		.signout-btn:hover {
+			background: #b43734;
+		}
+		/* Responsive tweaks */
+		@media (max-width: 600px) {
+			.profile-card {
+				flex-direction: column;
+				align-items: center;
+				text-align: center;
+			}
+			.profile-avatar {
+				margin-bottom: 12px;
+			}
+			.modal-content {
+				padding: 28px 20px 22px 20px;
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="header">
+		<span>Profiles</span>
+		<div class="icons">
+			<i class="fa-solid fa-user" id="authIcon" title="Sign In / Out"></i>
+			<span id="signedInUser" style="display:none;"></span>
+		</div>
+	</div>
+
+	<div class="content">
+		<div id="loadingSpinner">Loading profiles...</div>
+		<div id="emptyState" style="display:none;">No profiles yet.</div>
+		<div id="profileList"></div>
+	</div>
+
+	<!-- Auth Modal -->
+	<div id="authModal" class="modal hidden" aria-modal="true" role="dialog" aria-labelledby="authTitle">
+		<div class="modal-content" role="document">
+			<span class="close" id="closeAuthModal" aria-label="Close modal">&times;</span>
+			<div id="authModalViews">
+				<!-- Signed In View -->
+				<div id="signedInView" style="display:none; flex-direction: column; align-items: center; gap: 1.4em;">
+					<h3 id="authTitle">Signed in as <span id="currentUserName"></span></h3>
+					<button id="signOutBtn" class="auth-footer-btn signout-btn" aria-label="Sign out">Sign Out</button>
+				</div>
+				<!-- Sign In View -->
+				<div id="signInView" style="display:none; flex-direction: column; gap: 1em;">
+					<h3 id="authTitle">Sign In</h3>
+					<form id="signInForm">
+						<label for="signInUsername">Username:</label>
+						<input type="text" id="signInUsername" placeholder="Username" autocomplete="username" required />
+						<label for="signInPassword">Password:</label>
+						<input type="password" id="signInPassword" placeholder="Password" autocomplete="current-password" required />
+						<button type="submit">Sign In</button>
+					</form>
+					<button id="showChangePassword" class="auth-footer-btn" aria-label="Change password">Change Password</button>
+					<p>Don't have an account? <a href="#" id="toSignUp">Sign up</a></p>
+				</div>
+				<!-- Sign Up View -->
+				<div id="signUpView" style="display:none; flex-direction: column; gap: 1em;">
+					<h3 id="authTitle">Sign Up</h3>
+					<form id="signUpForm">
+						<label for="signUpUsername">Username:</label>
+						<input type="text" id="signUpUsername" placeholder="Username" autocomplete="username" required />
+						<label for="signUpPassword">Password:</label>
+						<input type="password" id="signUpPassword" placeholder="Password" autocomplete="new-password" required />
+						<button type="submit">Sign Up</button>
+					</form>
+					<p>Already have an account? <a href="#" id="toSignIn">Sign in</a></p>
+				</div>
+				<!-- Change Password View -->
+				<div id="changePasswordView" style="display:none; flex-direction: column; gap: 1em;">
+					<h3 id="authTitle">Change Password</h3>
+					<form id="changePasswordForm">
+						<label for="changePasswordUsername">Username:</label>
+						<input type="text" id="changePasswordUsername" placeholder="Username" required />
+						<label for="newPassword">New Password:</label>
+						<input type="password" id="newPassword" placeholder="New Password" required />
+						<button type="submit">Change Password</button>
+					</form>
+					<p><a href="#" id="backToSignIn">Back to Sign In</a></p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Footer -->
+	<div class="footer">
+		<a href="playdates.html" aria-label="Playdates"><i class="fa-solid fa-calendar"></i></a>
+		<a href="walks.html" aria-label="Walks"><i class="fa-solid fa-dog"></i></a>
+		<a href="/" aria-label="Home"><i class="fa-solid fa-house"></i></a>
+		<a class="active" href="profiles.html" aria-label="Profiles"><i class="fa-solid fa-user"></i></a>
+		<a href="chat.html" aria-label="Chat"><i class="fa-solid fa-comment-dots"></i></a>
+	</div>
+
+	<script type="module">
+		import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+		import { getDatabase, ref, onChildAdded, get, set, child, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+		// Firebase config
+		const firebaseConfig = {
+			apiKey: "AIzaSyCMuOymY5KniYJgg51vkhcYWxXeyXAyFk0",
+			authDomain: "pet-paths.firebaseapp.com",
+			databaseURL: "https://pet-paths-default-rtdb.europe-west1.firebasedatabase.app",
+			projectId: "pet-paths",
+			storageBucket: "pet-paths.firebasestorage.app",
+			messagingSenderId: "5202022310",
+			appId: "1:5202022310:web:55991fbd2be58294bfc967",
+			measurementId: "G-SW8L37HRVV",
+		};
+
+		const app = initializeApp(firebaseConfig);
+		const db = getDatabase(app);
+		const accountsRef = ref(db, "accounts");
+
+		const profileListEl = document.getElementById("profileList");
+		const loadingSpinner = document.getElementById("loadingSpinner");
+		const emptyStateEl = document.getElementById("emptyState");
+
+		const authIcon = document.getElementById("authIcon");
+		const authModal = document.getElementById("authModal");
+		const closeAuthModal = document.getElementById("closeAuthModal");
+
+		const signInView = document.getElementById("signInView");
+		const signUpView = document.getElementById("signUpView");
+		const changePasswordView = document.getElementById("changePasswordView");
+		const signedInView = document.getElementById("signedInView");
+
+		const toSignUp = document.getElementById("toSignUp");
+		const toSignIn = document.getElementById("toSignIn");
+		const showChangePassword = document.getElementById("showChangePassword");
+		const backToSignIn = document.getElementById("backToSignIn");
+
+		const signInForm = document.getElementById("signInForm");
+		const signUpForm = document.getElementById("signUpForm");
+		const changePasswordForm = document.getElementById("changePasswordForm");
+
+		const signOutBtn = document.getElementById("signOutBtn");
+
+		const signedInUserSpan = document.getElementById("signedInUser");
+		const currentUserNameSpan = document.getElementById("currentUserName");
+
+		let allProfiles = {};
+		let currentUser = null; // will store { username, key, ...profileData }
+
+		// Create a profile card
+		function createProfileCard(data, key) {
+			const div = document.createElement("div");
+			div.className = "profile-card";
+
+			let avatarHtml;
+			if (data.photoURL) {
+				avatarHtml = `<div class="profile-avatar"><img src="${data.photoURL}" alt="Avatar"/></div>`;
+			} else {
+				avatarHtml = `<div class="profile-avatar"><i class="fa-solid fa-user"></i></div>`;
+			}
+
+			div.innerHTML = `
+				${avatarHtml}
+				<div class="profile-info">
+					<div class="profile-name">${data.displayName || data.username || "Anonymous"}</div>
+					<div class="profile-details-row">
+						<div><i class="fa-solid fa-dog"></i> ${data.petName || "Unnamed Pet"}</div>
+						<div><i class="fa-solid fa-location-dot"></i> ${data.location || "Unknown Location"}</div>
+					</div>
+					${data.notes ? `<div class="profile-notes">${data.notes}</div>` : ""}
+				</div>
+			`;
+			return div;
+		}
+
+		function renderProfiles() {
+			profileListEl.innerHTML = "";
+			const keys = Object.keys(allProfiles);
+
+			// Filter out current user profile from list
+			const filteredKeys = keys.filter(k => {
+				if (!currentUser) return true;
+				return allProfiles[k].username !== currentUser.username;
+			});
+
+			if (filteredKeys.length === 0) {
+				emptyStateEl.style.display = "block";
+			} else {
+				emptyStateEl.style.display = "none";
+				filteredKeys.forEach(key => {
+					const card = createProfileCard(allProfiles[key], key);
+					profileListEl.appendChild(card);
+				});
+			}
+		}
+
+		function loadProfiles() {
+			loadingSpinner.style.display = "block";
+			get(accountsRef)
+				.then(snapshot => {
+					if (snapshot.exists()) {
+						allProfiles = snapshot.val();
+					} else {
+						allProfiles = {};
+					}
+					renderProfiles();
+				})
+				.catch(() => {
+					emptyStateEl.textContent = "Failed to load profiles.";
+					emptyStateEl.style.display = "block";
+				})
+				.finally(() => {
+					loadingSpinner.style.display = "none";
+				});
+		}
+
+		// -- AUTH LOGIC --
+
+		function setCurrentUser(userObj) {
+			currentUser = userObj;
+			if (currentUser) {
+				authIcon.style.color = "#4a4fcf";
+				signedInUserSpan.style.display = "inline-block";
+				signedInUserSpan.textContent = currentUser.username;
+			} else {
+				authIcon.style.color = "black";
+				signedInUserSpan.style.display = "none";
+				signedInUserSpan.textContent = "";
+			}
+			renderProfiles();
+		}
+
+		// Show the proper modal view
+		function showAuthView(view) {
+			// hide all
+			[signInView, signUpView, changePasswordView, signedInView].forEach(el => (el.style.display = "none"));
+
+			if (view === "signin") signInView.style.display = "flex";
+			else if (view === "signup") signUpView.style.display = "flex";
+			else if (view === "changepassword") changePasswordView.style.display = "flex";
+			else if (view === "signedin") signedInView.style.display = "flex";
+		}
+
+		// Open modal and show appropriate view
+		function openAuthModal() {
+			authModal.classList.remove("hidden");
+			if (currentUser) {
+				currentUserNameSpan.textContent = currentUser.username;
+				showAuthView("signedin");
+			} else {
+				showAuthView("signin");
+			}
+		}
+
+		function closeAuth() {
+			authModal.classList.add("hidden");
+			signInForm.reset();
+			signUpForm.reset();
+			changePasswordForm.reset();
+		}
+
+		// Auth: Sign in
+		signInForm.addEventListener("submit", e => {
+			e.preventDefault();
+			const username = signInForm.signInUsername.value.trim();
+			const password = signInForm.signInPassword.value;
+
+			if (!username || !password) return alert("Please enter username and password");
+
+			if (!allProfiles) return alert("Profiles data not loaded");
+
+			// Find user by username
+			const foundEntry = Object.entries(allProfiles).find(
+				([key, val]) => val.username.toLowerCase() === username.toLowerCase()
+			);
+			if (!foundEntry) {
+				return alert("User not found");
+			}
+			const [userKey, userData] = foundEntry;
+
+			if (!userData.password) {
+				return alert("User has no password set, cannot sign in.");
+			}
+
+			if (password !== userData.password) {
+				return alert("Incorrect password");
+			}
+
+			setCurrentUser({ ...userData, key: userKey });
+			closeAuth();
+		});
+
+		// Auth: Sign up
+		signUpForm.addEventListener("submit", e => {
+			e.preventDefault();
+			const username = signUpForm.signUpUsername.value.trim();
+			const password = signUpForm.signUpPassword.value;
+
+			if (!username || !password) return alert("Please enter username and password");
+
+			// Check if username already exists
+			const usernameExists = Object.values(allProfiles).some(
+				prof => prof.username.toLowerCase() === username.toLowerCase()
+			);
+			if (usernameExists) {
+				return alert("Username already taken");
+			}
+
+			// Create new user profile (with minimal data)
+			const newUserKey = pushKey();
+
+			const newProfile = {
+				username,
+				password,
+				displayName: username,
+				petName: "",
+				location: "",
+				notes: "",
+				photoURL: ""
+			};
+
+			set(ref(db, `accounts/${newUserKey}`), newProfile)
+				.then(() => {
+					allProfiles[newUserKey] = newProfile;
+					setCurrentUser({ ...newProfile, key: newUserKey });
+					closeAuth();
+					renderProfiles();
+				})
+				.catch(() => alert("Failed to create account"));
+		});
+
+		// Auth: Change Password
+		changePasswordForm.addEventListener("submit", e => {
+			e.preventDefault();
+			const username = changePasswordForm.changePasswordUsername.value.trim();
+			const newPassword = changePasswordForm.newPassword.value;
+
+			if (!username || !newPassword) return alert("Please enter username and new password");
+
+			const foundEntry = Object.entries(allProfiles).find(
+				([key, val]) => val.username.toLowerCase() === username.toLowerCase()
+			);
+
+			if (!foundEntry) {
+				return alert("User not found");
+			}
+			const [userKey, userData] = foundEntry;
+
+			update(ref(db, `accounts/${userKey}`), { password: newPassword })
+				.then(() => {
+					allProfiles[userKey].password = newPassword;
+					alert("Password changed successfully!");
+					showAuthView("signin");
+					changePasswordForm.reset();
+				})
+				.catch(() => alert("Failed to change password"));
+		});
+
+		// Sign out
+		signOutBtn.addEventListener("click", () => {
+			setCurrentUser(null);
+			closeAuth();
+		});
+
+		// Navigation inside modal
+		toSignUp.addEventListener("click", e => {
+			e.preventDefault();
+			showAuthView("signup");
+		});
+		toSignIn.addEventListener("click", e => {
+			e.preventDefault();
+			showAuthView("signin");
+		});
+		showChangePassword.addEventListener("click", () => {
+			showAuthView("changepassword");
+		});
+		backToSignIn.addEventListener("click", e => {
+			e.preventDefault();
+			showAuthView("signin");
+		});
+
+		// Open modal on auth icon click
+		authIcon.addEventListener("click", openAuthModal);
+
+		// Close modal
+		closeAuthModal.addEventListener("click", closeAuth);
+
+		// Close modal on outside click
+		authModal.addEventListener("click", (e) => {
+			if (e.target === authModal) {
+				closeAuth();
+			}
+		});
+
+		// Keyboard accessibility for modal (Escape closes)
+		window.addEventListener("keydown", (e) => {
+			if (e.key === "Escape" && !authModal.classList.contains("hidden")) {
+				closeAuth();
+			}
+		});
+
+		// Utility to generate a random key for new user
+		function pushKey() {
+			return 'key-' + Math.random().toString(36).substr(2, 12);
+		}
+
+		// Initial loading of profiles
+		loadProfiles();
+
+	</script>
+</body>
+</html>

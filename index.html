@@ -1,18 +1,191 @@
-<!DOCTYPE HTML>
-<html></html>
-    <style>
-        .bottomnav {
-            display: block;
-            color: blue;
-        }
-    </style>
-    <body>
-        <center>
-            <h1>Welcome to</h1>
-            <h1>Pet-Paths!</h1>
-            <div class="bottomnav">
-                <button>yes</button>
-            </div>
-        </center>
-    </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pet Paths</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #d3d3d3;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 100vh;
+      text-align: center;
+    }
+
+    .container {
+      padding: 20px;
+      flex: 1;
+    }
+
+    h1 {
+      margin-top: 40px;
+      font-size: 2rem;
+      font-weight: bold;
+    }
+
+    p {
+      font-size: 1rem;
+      margin: 20px 0;
+      line-height: 1.5;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .btn {
+      display: block;
+      width: fit-content;
+      margin: 15px auto;
+      padding: 12px 20px;
+      background-color: #4a4fcf;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background-color: #3a3fb0;
+    }
+
+    /* Bottom nav bar */
+    .footer {
+      background-color: #4a4fcf;
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-end;
+      padding: 14px 0 10px;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+    }
+
+    .footer a {
+      text-decoration: none;
+      color: black;
+      font-size: 24px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      z-index: 2;
+      transition: transform 0.3s ease, font-size 0.3s ease;
+    }
+
+    .footer a i {
+      position: relative;
+      z-index: 3; /* icons always above circle */
+      transition: transform 0.3s ease, font-size 0.3s ease;
+    }
+
+    /* Circle behind active icon */
+    .footer a.active::before {
+      content: "";
+      width: 50px;
+      height: 50px;
+      background-color: #4a4fcf;
+      border-radius: 50%;
+      position: absolute;
+      top: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1;
+    }
+
+    /* Active icon larger + slight lift */
+    .footer a.active i {
+      font-size: 30px;
+      transform: translateY(-5px);
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.6rem;
+      }
+      p {
+        font-size: 0.95rem;
+        padding: 0 10px;
+      }
+      .btn {
+        font-size: 0.95rem;
+        padding: 10px 18px;
+      }
+      .footer a {
+        font-size: 22px;
+      }
+      .footer a.active::before {
+        width: 40px;
+        height: 40px;
+        top: -22px;
+      }
+      .footer a.active i {
+        font-size: 28px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.4rem;
+      }
+      p {
+        font-size: 0.9rem;
+      }
+      .btn {
+        font-size: 0.9rem;
+        padding: 9px 16px;
+      }
+      .footer a {
+        font-size: 20px;
+      }
+      .footer a.active::before {
+        width: 36px;
+        height: 36px;
+        top: -20px;
+      }
+      .footer a.active i {
+        font-size: 26px;
+      }
+    }
+  </style>
+
+  <!-- Font Awesome -->
+  <link 
+    rel="stylesheet" 
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
+    integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" 
+    crossorigin="anonymous" 
+    referrerpolicy="no-referrer" 
+  />
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome to <br> pet paths!</h1>
+    <p>
+      We are devoted to bringing safer dog walks to the world.  
+      By using Pet Paths you are contributing to our vision of  
+      creating happier communities for pets and their owners.  
+      Every walk, every report, and every connection makes a difference.
+    </p>
+
+    <a href="walks.html" class="btn">Share your dog walk</a>
+    <p>or:</p>
+    <a href="doggy-playdate.html" class="btn">Propose a doggy play date</a>
+  </div>
+
+  <div class="footer">
+    <a href="#"><i class="fa-solid fa-calendar"></i></a>
+    <a href="doggy-playdate.html"><i class="fa-solid fa-dog"></i></a>
+    <a href="index.html" class="active"><i class="fa-solid fa-house"></i></a>
+    <a href="profiles.html"><i class="fa-solid fa-user"></i></a>
+    <a href="feedback.html"><i class="fa-solid fa-comment-dots"></i></a>
+  </div>
+</body>
 </html>

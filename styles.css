@@ -1,3 +1,76 @@
+
+/* Modal styles for auth modal to match walks.html */
+.modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.modal.hidden { display: none; }
+.modal-content {
+  max-width: 400px;
+  width: 98vw;
+  background: #fff;
+  max-height: 80vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+  box-shadow: 0 4px 32px rgba(60,60,60,0.18);
+  padding: 28px 6vw 22px 6vw;
+  gap: 1.2em;
+  position: relative;
+}
+.modal-content h3 {
+  text-align: center;
+  margin-bottom: 15px;
+  color: #3a6ea5;
+}
+.modal-content label {
+  display: block;
+  margin: 10px 0 0 0;
+  font-weight: 500;
+}
+.modal-content input[type="email"],
+.modal-content input[type="password"] {
+  width: 100%;
+  padding: 8px 10px;
+  margin-top: 4px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+.modal-content button,
+.modal-content form button {
+  background: #4a4fcf;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 10px;
+}
+.modal-content button:hover,
+.modal-content form button:hover {
+  background: #3a3fb0;
+}
+.modal-content a {
+  color: #1976d2;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.close {
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  font-size: 2rem;
+  cursor: pointer;
+}
 @import url('https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300..800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap');
 
