@@ -161,7 +161,7 @@
 			position: fixed;
 			top: 0;
 			left: 0;
-			width: 100vw;
+			width: 200vh;
 			height: 100vh;
 			background: rgba(0, 0, 0, 0.45);
 			display: flex;
@@ -176,7 +176,7 @@
 			opacity: 0;
 		}
 		.modal-content {
-			max-width: 420px;
+			max-width: 500px;
 			width: 90vw;
 			background: white;
 			max-height: 85vh;
@@ -206,7 +206,7 @@
 		}
 		.modal-content input[type="text"],
 		.modal-content input[type="password"] {
-			width: 100%;
+			width: 95%;
 			padding: 10px 14px;
 			border: 1.8px solid #d1d1d1;
 			border-radius: 10px;
@@ -335,9 +335,12 @@
 						<input type="text" id="signInUsername" placeholder="Username" autocomplete="username" required />
 						<label for="signInPassword">Password:</label>
 						<input type="password" id="signInPassword" placeholder="Password" autocomplete="current-password" required />
-						<button type="submit">Sign In</button>
+						<br>
+						<p>Forogt your password?<a id="showChangePassword" style="padding-left: 10px;">Change password</a></p>
+						<center>
+							<button type="submit" class="auth-footer-btn" style="width: 150px;">Sign In</button>
+						</center>
 					</form>
-					<button id="showChangePassword" class="auth-footer-btn" aria-label="Change password">Change Password</button>
 					<p>Don't have an account? <a href="#" id="toSignUp">Sign up</a></p>
 				</div>
 				<!-- Sign Up View -->
@@ -374,7 +377,7 @@
 		<a href="walks.html" aria-label="Walks"><i class="fa-solid fa-dog"></i></a>
 		<a href="/" aria-label="Home"><i class="fa-solid fa-house"></i></a>
 		<a class="active" href="profiles.html" aria-label="Profiles"><i class="fa-solid fa-user"></i></a>
-		<a href="chat.html" aria-label="Chat"><i class="fa-solid fa-comment-dots"></i></a>
+		<a href="feedback.html" aria-label="Chat"><i class="fa-solid fa-comment-dots"></i></a>
 	</div>
 
 	<script type="module">

@@ -262,8 +262,8 @@
 
   <!-- Footer -->
   <div class="footer">
-    <a href="playdates.html"><i class="fa-solid fa-calendar"></i></a>
-    <a class='active' href='/walks'><i class="fa-solid fa-dog"></i></a>
+    <a href="playdates.html" class="active"><i class="fa-solid fa-calendar"></i></a>
+    <a href='/walks'><i class="fa-solid fa-dog"></i></a>
     <a href='/'><i class="fa-solid fa-house"></i></a>
     <a href="profiles.html"><i class="fa-solid fa-user"></i></a>
     <a href="chat.html"><i class="fa-solid fa-comment-dots"></i></a>
@@ -288,7 +288,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const statusRef = ref(db, "narberthDogWalkStatuses");
+    const statusRef = ref(db, "narberthDoggyPlaydates");
 
     const statusListEl = document.getElementById("statusList");
     const loadingSpinner = document.getElementById("loadingSpinner");
