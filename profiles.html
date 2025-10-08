@@ -161,7 +161,7 @@
 			position: fixed;
 			top: 0;
 			left: 0;
-			width: 200vh;
+			width: 100vw;
 			height: 100vh;
 			background: rgba(0, 0, 0, 0.45);
 			display: flex;
@@ -188,6 +188,7 @@
 			padding: 28px 30px 22px 30px;
 			gap: 1.5em;
 			position: relative;
+			box-sizing: border-box;
 		}
 		.modal-content h3 {
 			margin: 0 0 20px;
@@ -297,7 +298,26 @@
 				margin-bottom: 12px;
 			}
 			.modal-content {
-				padding: 28px 20px 22px 20px;
+				max-width: 98vw;
+				width: 98vw;
+				min-width: 0;
+				padding: 18px 6vw 16px 6vw;
+				border-radius: 12px;
+				font-size: 1rem;
+			}
+			.modal-content h3 {
+				font-size: 1.15rem;
+			}
+			.modal-content label,
+			.modal-content input[type="text"],
+			.modal-content input[type="password"],
+			.modal-content button {
+				font-size: 1rem;
+			}
+			.close {
+				top: 8px;
+				right: 12px;
+				font-size: 1.5rem;
 			}
 		}
 	</style>
