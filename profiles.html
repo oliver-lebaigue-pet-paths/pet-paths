@@ -335,6 +335,12 @@
 		<div id="loadingSpinner">Loading profiles...</div>
 		<div id="emptyState" style="display:none;">No profiles yet.</div>
 		<div id="profileList"></div>
+
+		<!-- Pet Gallery Section -->
+		<div id="petGallerySection" style="margin-top: 36px;">
+			<h2 style="color:#3a6ea5; font-size:1.3em; margin-bottom:10px;">Pet Gallery</h2>
+			<div id="petGallery" style="display:flex; flex-wrap:wrap; gap:14px;"></div>
+		</div>
 	</div>
 
 	<!-- Auth Modal -->
@@ -345,8 +351,34 @@
 				<!-- Signed In View -->
 				<div id="signedInView" style="display:none; flex-direction: column; align-items: center; gap: 1.4em;">
 					<h3 id="authTitle">Signed in as <span id="currentUserName"></span></h3>
+					<button id="editProfileBtn" class="auth-footer-btn" aria-label="Edit Profile" style="background:#3a6ea5;">Edit My Profile</button>
 					<button id="signOutBtn" class="auth-footer-btn signout-btn" aria-label="Sign out">Sign Out</button>
 				</div>
+	<!-- Edit Profile Modal -->
+	<div id="editProfileModal" class="modal hidden" aria-modal="true" role="dialog" aria-labelledby="editProfileTitle">
+		<div class="modal-content" role="document">
+			<span class="close" id="closeEditProfileModal" aria-label="Close modal">&times;</span>
+			<h3 id="editProfileTitle">Edit My Profile</h3>
+			<form id="editProfileForm">
+				<label for="editDisplayName">Display Name:</label>
+				<input type="text" id="editDisplayName" name="editDisplayName" required />
+
+				<label for="editPetName">Pet Name:</label>
+				<input type="text" id="editPetName" name="editPetName" />
+
+				<label for="editLocation">Location:</label>
+				<input type="text" id="editLocation" name="editLocation" />
+
+				<label for="editNotes">Notes:</label>
+				<input type="text" id="editNotes" name="editNotes" />
+
+				<label for="editPhotoURL">Photo URL:</label>
+				<input type="text" id="editPhotoURL" name="editPhotoURL" placeholder="https://..." />
+
+				<button type="submit">Save Changes</button>
+			</form>
+		</div>
+	</div>
 				<!-- Sign In View -->
 				<div id="signInView" style="display:none; flex-direction: column; gap: 1em;">
 					<h3 id="authTitle">Sign In</h3>
@@ -400,9 +432,22 @@
 		<a href="feedback.html" aria-label="Chat"><i class="fa-solid fa-comment-dots"></i></a>
 	</div>
 
+	<!-- Message Modal -->
+	<div id="messageModal" class="modal hidden" aria-modal="true" role="dialog" aria-labelledby="messageModalTitle">
+		<div class="modal-content" role="document" style="max-width:420px;gap:0.7em;">
+			<span class="close" id="closeMessageModal" aria-label="Close modal">&times;</span>
+			<h3 id="messageModalTitle">Send Message</h3>
+			<div id="messageThread" style="max-height:220px;overflow-y:auto;margin-bottom:10px;"></div>
+			<form id="sendMessageForm" style="display:flex;gap:8px;align-items:center;">
+				<input type="text" id="messageInput" placeholder="Type your message..." style="flex:1;padding:8px 10px;border-radius:8px;border:1.2px solid #ccc;" required />
+				<button type="submit" style="background:#4a4fcf;color:white;border:none;border-radius:8px;padding:8px 16px;font-weight:600;">Send</button>
+			</form>
+		</div>
+	</div>
+
 	<script type="module">
 		import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-		import { getDatabase, ref, onChildAdded, get, set, child, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+		import { getDatabase, ref, onChildAdded, get, set, child, update, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 		// Firebase config
 		const firebaseConfig = {
@@ -462,15 +507,25 @@
 				avatarHtml = `<div class="profile-avatar"><i class="fa-solid fa-user"></i></div>`;
 			}
 
+			// Badge for first 100 members
+			let badgeHtml = "";
+			if (data.joinOrder && data.joinOrder <= 100) {
+				badgeHtml = `<span style="background:#ffd700;color:#3a6ea5;padding:2px 10px;border-radius:8px;font-size:0.9em;margin-left:8px;vertical-align:middle;">Top 100</span>`;
+			}
+
+			// Send Message button (not functional, placeholder)
+			let messageBtn = `<button class="sendMsgBtn" data-username="${data.username}" style="margin-top:10px;background:#4a4fcf;color:white;border:none;border-radius:8px;padding:7px 16px;cursor:pointer;font-size:0.98em;">Send Message</button>`;
+
 			div.innerHTML = `
 				${avatarHtml}
 				<div class="profile-info">
-					<div class="profile-name">${data.displayName || data.username || "Anonymous"}</div>
+					<div class="profile-name">${data.displayName || data.username || "Anonymous"} ${badgeHtml}</div>
 					<div class="profile-details-row">
 						<div><i class="fa-solid fa-dog"></i> ${data.petName || "Unnamed Pet"}</div>
 						<div><i class="fa-solid fa-location-dot"></i> ${data.location || "Unknown Location"}</div>
 					</div>
 					${data.notes ? `<div class="profile-notes">${data.notes}</div>` : ""}
+					${messageBtn}
 				</div>
 			`;
 			return div;
@@ -495,6 +550,25 @@
 					profileListEl.appendChild(card);
 				});
 			}
+
+			// Render pet gallery
+			const petGallery = document.getElementById("petGallery");
+			petGallery.innerHTML = "";
+			keys.forEach(key => {
+				const prof = allProfiles[key];
+				if (prof.photoURL) {
+					const img = document.createElement("img");
+					img.src = prof.photoURL;
+					img.alt = prof.petName || "Pet Photo";
+					img.title = (prof.displayName || prof.username || "User") + (prof.petName ? `'s pet: ${prof.petName}` : "");
+					img.style.width = "90px";
+					img.style.height = "90px";
+					img.style.objectFit = "cover";
+					img.style.borderRadius = "12px";
+					img.style.boxShadow = "0 2px 8px rgba(60,60,60,0.13)";
+					petGallery.appendChild(img);
+				}
+			});
 		}
 
 		function loadProfiles() {
@@ -503,6 +577,17 @@
 				.then(snapshot => {
 					if (snapshot.exists()) {
 						allProfiles = snapshot.val();
+
+						// Assign joinOrder if not present (for badge)
+						const keys = Object.keys(allProfiles);
+						let changed = false;
+						keys.forEach((k, idx) => {
+							if (!allProfiles[k].joinOrder) {
+								allProfiles[k].joinOrder = idx + 1;
+								update(ref(db, `accounts/${k}`), { joinOrder: idx + 1 });
+								changed = true;
+							}
+						});
 					} else {
 						allProfiles = {};
 					}
@@ -554,6 +639,55 @@
 				showAuthView("signin");
 			}
 		}
+
+		// Edit Profile Modal logic
+		const editProfileModal = document.getElementById("editProfileModal");
+		const closeEditProfileModal = document.getElementById("closeEditProfileModal");
+		const editProfileBtn = document.getElementById("editProfileBtn");
+		const editProfileForm = document.getElementById("editProfileForm");
+
+		function openEditProfileModal() {
+			if (!currentUser) return;
+			editProfileModal.classList.remove("hidden");
+			// Fill form with current user data
+			document.getElementById("editDisplayName").value = currentUser.displayName || currentUser.username || "";
+			document.getElementById("editPetName").value = currentUser.petName || "";
+			document.getElementById("editLocation").value = currentUser.location || "";
+			document.getElementById("editNotes").value = currentUser.notes || "";
+			document.getElementById("editPhotoURL").value = currentUser.photoURL || "";
+		}
+
+		function closeEditProfile() {
+			editProfileModal.classList.add("hidden");
+			editProfileForm.reset();
+		}
+
+		if (editProfileBtn) editProfileBtn.addEventListener("click", openEditProfileModal);
+		if (closeEditProfileModal) closeEditProfileModal.addEventListener("click", closeEditProfile);
+		editProfileModal.addEventListener("click", (e) => {
+			if (e.target === editProfileModal) closeEditProfile();
+		});
+
+		editProfileForm.addEventListener("submit", e => {
+			e.preventDefault();
+			if (!currentUser) return;
+			const key = currentUser.key;
+			const updated = {
+				displayName: editProfileForm.editDisplayName.value.trim(),
+				petName: editProfileForm.editPetName.value.trim(),
+				location: editProfileForm.editLocation.value.trim(),
+				notes: editProfileForm.editNotes.value.trim(),
+				photoURL: editProfileForm.editPhotoURL.value.trim(),
+			};
+			update(ref(db, `accounts/${key}`), updated)
+				.then(() => {
+					Object.assign(allProfiles[key], updated);
+					setCurrentUser({ ...allProfiles[key], key });
+					closeEditProfile();
+					renderProfiles();
+				})
+				.catch(() => alert("Failed to update profile"));
+		});
 
 		function closeAuth() {
 			authModal.classList.add("hidden");
@@ -706,6 +840,85 @@
 		function pushKey() {
 			return 'key-' + Math.random().toString(36).substr(2, 12);
 		}
+
+		// --- Messaging Functionality ---
+		const messageModal = document.getElementById("messageModal");
+		const closeMessageModal = document.getElementById("closeMessageModal");
+		const messageThread = document.getElementById("messageThread");
+		const sendMessageForm = document.getElementById("sendMessageForm");
+		const messageInput = document.getElementById("messageInput");
+
+		let messageRecipient = null;
+
+		function openMessageModal(recipientUsername) {
+			if (!currentUser) {
+				alert("You must be signed in to send messages.");
+				return;
+			}
+			messageRecipient = recipientUsername;
+			messageModal.classList.remove("hidden");
+			messageInput.value = "";
+			loadMessageThread();
+		}
+
+		function closeMessage() {
+			messageModal.classList.add("hidden");
+			messageThread.innerHTML = "";
+			messageRecipient = null;
+		}
+
+		if (closeMessageModal) closeMessageModal.addEventListener("click", closeMessage);
+		messageModal.addEventListener("click", (e) => {
+			if (e.target === messageModal) closeMessage();
+		});
+
+		document.addEventListener("click", function(e) {
+			if (e.target && e.target.classList.contains("sendMsgBtn")) {
+				const username = e.target.getAttribute("data-username");
+				openMessageModal(username);
+			}
+		});
+
+		function getMessageThreadId(userA, userB) {
+			// Consistent thread id for both users
+			return [userA, userB].sort().join("__");
+		}
+
+		function loadMessageThread() {
+			if (!currentUser || !messageRecipient) return;
+			const threadId = getMessageThreadId(currentUser.username, messageRecipient);
+			const threadRef = ref(db, `messages/${threadId}`);
+			onValue(threadRef, (snapshot) => {
+				const msgs = snapshot.val() || {};
+				messageThread.innerHTML = "";
+				Object.values(msgs).sort((a,b)=>a.timestamp-b.timestamp).forEach(msg => {
+					const div = document.createElement("div");
+					div.style.margin = "6px 0";
+					div.style.textAlign = msg.from === currentUser.username ? "right" : "left";
+					div.innerHTML = `<span style='display:inline-block;background:${msg.from===currentUser.username?"#4a4fcf":"#e0e0de"};color:${msg.from===currentUser.username?"#fff":"#222"};padding:6px 13px;border-radius:12px;max-width:70%;word-break:break-word;'>${msg.text}</span><br><span style='font-size:0.8em;color:#888;'>${new Date(msg.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>`;
+					messageThread.appendChild(div);
+				});
+				messageThread.scrollTop = messageThread.scrollHeight;
+			});
+		}
+
+		sendMessageForm.addEventListener("submit", e => {
+			e.preventDefault();
+			if (!currentUser || !messageRecipient) return;
+			const text = messageInput.value.trim();
+			if (!text) return;
+			const threadId = getMessageThreadId(currentUser.username, messageRecipient);
+			const threadRef = ref(db, `messages/${threadId}`);
+			const msgObj = {
+				from: currentUser.username,
+				to: messageRecipient,
+				text,
+				timestamp: Date.now(),
+				read: false
+			};
+			push(threadRef, msgObj);
+			messageInput.value = "";
+		});
 
 		// Initial loading of profiles
 		loadProfiles();

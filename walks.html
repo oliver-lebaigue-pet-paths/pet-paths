@@ -297,14 +297,21 @@
     let allStatuses = {};
     let currentFilter = "all";
 
+    // No adaptive status text, just return the original status
+    function getStatusByTime(data) {
+      return data.status;
+    }
+
     function createStatusCard(data, key) {
+      const statusText = getStatusByTime(data);
+      if (!statusText) return null; // Don't render if walk is over
       const div = document.createElement("div");
       div.className = "status-card";
       const mapId = `map-${key}`;
       div.innerHTML = `
         <div class="status-card-header">
-          <span class="status-type ${data.status.replace(/\s+/g,'-').toLowerCase()}">
-            <i class="fa-solid fa-dog"></i> ${data.status}
+          <span class="status-type ${statusText.replace(/\s+/g,'-').toLowerCase()}">
+            <i class="fa-solid fa-dog"></i> ${statusText}
           </span>
           <span class="status-user"><i class="fa-solid fa-user"></i> ${data.user || "Anonymous"}</span>
         </div>
@@ -335,10 +342,21 @@
     function renderStatuses() {
       statusListEl.innerHTML = "";
       let filteredStatuses = Object.entries(allStatuses)
-        .filter(([key, data]) => currentFilter === "all" ||
-          data.status.toLowerCase() === currentFilter ||
-          data.safety.toLowerCase() === currentFilter
-        )
+        .map(([key, data]) => {
+          // Compute status by time
+          const statusText = getStatusByTime(data);
+          if (!statusText) return null; // Hide if walk is over
+          // For filtering, match on computed status or safety
+          if (
+            currentFilter === "all" ||
+            statusText.toLowerCase() === currentFilter ||
+            (data.safety && data.safety.toLowerCase() === currentFilter)
+          ) {
+            return [key, data, statusText];
+          }
+          return null;
+        })
+        .filter(Boolean)
         .sort((a, b) => b[1].timestamp - a[1].timestamp); // newest first
 
       if (filteredStatuses.length === 0) {
@@ -348,7 +366,8 @@
       }
 
       filteredStatuses.forEach(([key, data]) => {
-        statusListEl.appendChild(createStatusCard(data, key));
+        const card = createStatusCard(data, key);
+        if (card) statusListEl.appendChild(card);
       });
 
       loadingSpinner.style.display = "none";
@@ -358,6 +377,9 @@
       allStatuses[snap.key] = snap.val();
       renderStatuses();
     });
+
+    // Auto-refresh statuses every 30 seconds to update time-based status
+    setInterval(renderStatuses, 30000);
 
     // Modal handling
     const walkModal = document.getElementById("walkModal");
