@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Control Panel - Pet Paths</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f3f3f3;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 15px; background: #fff;
+      font-size: 1.2rem; font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .content {
+      flex: 1;
+      padding: 24px 16px 80px 16px;
+      max-width: 600px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .admin-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(60,60,60,0.08);
+      border: 1.5px solid #e0e0de;
+      padding: 24px 22px 18px 22px;
+      margin-top: 30px;
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2em;
+      align-items: center;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+    .switch input {display:none;}
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #4a4fcf;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    .footer {
+      background: #4a4fcf; display: flex; justify-content: space-around;
+      padding: 14px 0 10px; position: fixed; bottom: 0; width: 100%;
+      z-index: 1002;
+    }
+    .footer a { text-decoration: none; color: black; font-size: 24px; flex: 1;
+      display: flex; align-items: center; justify-content: center; position: relative; }
+    .footer a.active::before {
+      content: ""; width: 50px; height: 50px; background: #4a4fcf; border-radius: 50%;
+      position: absolute; top: -25px; left: 50%; transform: translateX(-50%); z-index: 1;
+    }
+    .footer a.active i { font-size: 30px; transform: translateY(-5px); z-index: 2; }
+    .admin-btn {
+      background: #4a4fcf; color: #fff; border: none;
+      padding: 12px 22px; border-radius: 10px;
+      font-size: 1rem; font-weight: 600;
+      cursor: pointer; margin-top: 10px;
+      transition: background 0.2s;
+    }
+    .admin-btn:hover { background: #3a3fb0; }
+    .status-msg { margin-top: 10px; color: #3a6ea5; font-size: 1em; }
+  </style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMuOymY5KniYJgg51vkhcYWxXeyXAyFk0",
+      authDomain: "pet-paths.firebaseapp.com",
+      databaseURL: "https://pet-paths-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "pet-paths",
+      storageBucket: "pet-paths.firebasestorage.app",
+      messagingSenderId: "5202022310",
+      appId: "1:5202022310:web:55991fbd2be58294bfc967",
+      measurementId: "G-SW8L37HRVV"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const adminRef = ref(db, "admin");
+
+    // In Development Mode toggle
+    const devSwitch = () => document.getElementById("devSwitch");
+    const devStatus = document.getElementById("devStatus");
+    onValue(ref(db, "admin/inDevelopment"), snap => {
+      const val = !!snap.val();
+      devSwitch().checked = val;
+      devStatus.textContent = val ? "ON" : "OFF";
+    });
+    devSwitch().addEventListener("change", async e => {
+      await set(ref(db, "admin/inDevelopment"), devSwitch().checked);
+      devStatus.textContent = devSwitch().checked ? "ON" : "OFF";
+    });
+
+    // All Client Refresh
+    const refreshBtn = document.getElementById("refreshBtn");
+    const refreshStatus = document.getElementById("refreshStatus");
+    refreshBtn.addEventListener("click", async () => {
+      const newVal = Date.now();
+      await set(ref(db, "admin/refresh"), newVal);
+      refreshStatus.textContent = "Triggered!";
+      setTimeout(async () => {
+        await set(ref(db, "admin/refresh"), 0);
+        refreshStatus.textContent = "";
+      }, 1200);
+    });
+  </script>
+</head>
+<body>
+  <div class="header">
+    <span>Admin Control Panel</span>
+    <i class="fa-solid fa-user-shield"></i>
+  </div>
+  <div class="content">
+    <div class="admin-card">
+      <h2 style="color:#3a6ea5;">In Development Mode</h2>
+      <label class="switch">
+        <input type="checkbox" id="devSwitch">
+        <span class="slider"></span>
+      </label>
+      <div>Current Status: <span id="devStatus">OFF</span></div>
+    </div>
+    <div class="admin-card">
+      <h2 style="color:#3a6ea5;">All Client Refresh</h2>
+      <button class="admin-btn" id="refreshBtn"><i class="fa-solid fa-arrows-rotate"></i> Trigger Refresh</button>
+      <div class="status-msg" id="refreshStatus"></div>
+      <div style="font-size:0.95em;color:#888;margin-top:8px;">All clients will reload when triggered.</div>
+    </div>
+    <div class="admin-card" style="background:#f8f8fa;font-size:0.98em;">
+      <b>To enable auto-refresh on other pages, add this snippet:</b>
+      <pre style="background:#eee;padding:10px 8px;border-radius:8px;overflow-x:auto;font-size:0.95em;">&lt;script type="module"&gt;
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+const firebaseConfig = { /* ...your config... */ };
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+onValue(ref(db, "admin/refresh"), snap => {
+  const val = snap.val();
+  if (val && (!window._lastRefresh || window._lastRefresh !== val)) {
+    window._lastRefresh = val;
+    if (val !== 0) location.reload();
+  }
+});
+&lt;/script&gt;</pre>
+    </div>
+  </div>
+  <div class="footer">
+    <a href="playdates.html"><i class="fa-solid fa-calendar"></i></a>
+    <a href="walks.html"><i class="fa-solid fa-dog"></i></a>
+    <a href="index.html"><i class="fa-solid fa-house"></i></a>
+    <a href="profiles.html"><i class="fa-solid fa-user"></i></a>
+    <a class="active" href="admin.html"><i class="fa-solid fa-user-shield"></i></a>
+  </div>
+</body>
+</html>

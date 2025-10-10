@@ -187,5 +187,28 @@
     <a href="profiles.html"><i class="fa-solid fa-user"></i></a>
     <a href="feedback.html"><i class="fa-solid fa-comment-dots"></i></a>
   </div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMuOymY5KniYJgg51vkhcYWxXeyXAyFk0",
+      authDomain: "pet-paths.firebaseapp.com",
+      databaseURL: "https://pet-paths-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "pet-paths",
+      storageBucket: "pet-paths.firebasestorage.app",
+      messagingSenderId: "5202022310",
+      appId: "1:5202022310:web:55991fbd2be58294bfc967",
+      measurementId: "G-SW8L37HRVV"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    onValue(ref(db, "admin/refresh"), snap => {
+      const val = snap.val();
+      if (val && (!window._lastRefresh || window._lastRefresh !== val)) {
+        window._lastRefresh = val;
+        if (val !== 0) location.reload();
+      }
+    });
+  </script>
 </body>
 </html>

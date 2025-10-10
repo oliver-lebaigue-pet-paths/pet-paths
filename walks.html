@@ -288,6 +288,15 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    // Listen for admin/refresh value to trigger reload
+    import { onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    onValue(ref(db, "admin/refresh"), snap => {
+      const val = snap.val();
+      if (val && (!window._lastRefresh || window._lastRefresh !== val)) {
+        window._lastRefresh = val;
+        if (val !== 0) location.reload();
+      }
+    });
     const statusRef = ref(db, "narberthDogWalkStatuses");
 
     const statusListEl = document.getElementById("statusList");
