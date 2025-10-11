@@ -463,15 +463,11 @@
 
 		const app = initializeApp(firebaseConfig);
 		const db = getDatabase(app);
+		const accountsRef = ref(db, "accounts");
 
-		// Listen for admin/refresh value to trigger reload
-		onValue(ref(db, "admin/refresh"), snap => {
-			const val = snap.val();
-			if (val && (!window._lastRefresh || window._lastRefresh !== val)) {
-				window._lastRefresh = val;
-				if (val !== 0) location.reload();
-			}
-		});
+		const profileListEl = document.getElementById("profileList");
+		const loadingSpinner = document.getElementById("loadingSpinner");
+		const emptyStateEl = document.getElementById("emptyState");
 
 		const authIcon = document.getElementById("authIcon");
 		const authModal = document.getElementById("authModal");
