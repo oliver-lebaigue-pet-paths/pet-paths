@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Settings - Pet Paths</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <style>
+    :root {
+      --primary: #4a4fcf;
+      --primary-dark: #3a3fb0;
+      --bg: #f3f3f3;
+      --text: #222;
+      --btn-text: #fff;
+      --header-bg: #4a4fcf;
+      --header-text: #fff;
+    }
+    [data-theme="dark"] {
+      --primary: #222b45;
+      --primary-dark: #151a30;
+      --bg: #181a20;
+      --text: #f3f3f3;
+      --btn-text: #fff;
+      --header-bg: #222b45;
+      --header-text: #fff;
+    }
+    [data-theme="forest"] {
+      --primary: #388e3c;
+      --primary-dark: #256029;
+      --bg: #e8f5e9;
+      --text: #1b3a1b;
+      --btn-text: #fff;
+      --header-bg: #388e3c;
+      --header-text: #fff;
+    }
+    [data-theme="ocean"] {
+      --primary: #1976d2;
+      --primary-dark: #0d47a1;
+      --bg: #e3f2fd;
+      --text: #0d223a;
+      --btn-text: #fff;
+      --header-bg: #1976d2;
+      --header-text: #fff;
+    }
+    [data-theme="rose"] {
+      --primary: #e91e63;
+      --primary-dark: #ad1457;
+      --bg: #fce4ec;
+      --text: #3a1b2f;
+      --btn-text: #fff;
+      --header-bg: #e91e63;
+      --header-text: #fff;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 15px; background: var(--header-bg);
+      color: var(--header-text);
+      font-size: 1.2rem; font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: background 0.3s, color 0.3s;
+    }
+    .content {
+      flex: 1;
+      padding: 32px 16px 80px 16px;
+      max-width: 600px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .settings-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(60,60,60,0.08);
+      border: 1.5px solid #e0e0de;
+      padding: 24px 22px 18px 22px;
+      margin-top: 30px;
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2em;
+      align-items: center;
+    }
+    .theme-switcher {
+      display: flex;
+      gap: 18px;
+      margin-top: 10px;
+    }
+    .theme-btn {
+      background: var(--primary);
+      color: var(--btn-text);
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 1rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s, color 0.2s;
+    }
+    .theme-btn.selected {
+      background: var(--primary-dark);
+      outline: 2px solid var(--primary);
+    }
+    .footer {
+      background: var(--primary); display: flex; justify-content: space-around;
+      padding: 14px 0 10px; position: fixed; bottom: 0; width: 100%;
+      z-index: 1002;
+    }
+    .footer a { text-decoration: none; color: black; font-size: 24px; flex: 1;
+      display: flex; align-items: center; justify-content: center; position: relative; }
+    .footer a.active::before {
+      content: ""; width: 50px; height: 50px; background: var(--primary); border-radius: 50%;
+      position: absolute; top: -25px; left: 50%; transform: translateX(-50%); z-index: 1;
+    }
+    .footer a.active i { font-size: 30px; transform: translateY(-5px); z-index: 2; }
+    @media (max-width: 600px) {
+      .settings-card { padding: 14px 6px 12px 6px; }
+      .content { padding: 18px 2vw 80px 2vw; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span>Settings</span>
+    <i class="fa-solid fa-gear"></i>
+  </div>
+  <div class="content">
+    <div class="settings-card">
+      <h2 style="color:var(--primary-dark);">Theme</h2>
+      <div class="theme-switcher">
+        <button class="theme-btn" data-theme="light"><i class="fa-regular fa-sun"></i> Light</button>
+        <button class="theme-btn" data-theme="dark"><i class="fa-regular fa-moon"></i> Dark</button>
+        <button class="theme-btn" data-theme="forest" style="background:#388e3c"><i class="fa-solid fa-tree"></i> Forest</button>
+        <button class="theme-btn" data-theme="ocean" style="background:#1976d2"><i class="fa-solid fa-water"></i> Ocean</button>
+        <button class="theme-btn" data-theme="rose" style="background:#e91e63"><i class="fa-solid fa-heart"></i> Rose</button>
+      </div>
+      <div style="margin-top:10px;font-size:0.98em;color:#888;">Choose your preferred color and text theme.</div>
+    </div>
+  </div>
+  <div class="footer">
+    <a href="settings.html"><i class="fa-solid fa-gear"></i></a>
+    <a href="playdates.html"><i class="fa-solid fa-calendar"></i></a>
+    <a href="walks.html"><i class="fa-solid fa-dog"></i></a>
+    <a href="index.html"><i class="fa-solid fa-house"></i></a>
+    <a href="profiles.html"><i class="fa-solid fa-user"></i></a>
+    <a href="feedback.html"><i class="fa-solid fa-clipboard-list"></i></a>
+    <a href="admin.html"><i class="fa-solid fa-user-shield"></i></a>
+  </div>
+  <script>
+    // Theme switcher logic
+    const themeBtns = document.querySelectorAll('.theme-btn');
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('petpaths_theme', theme);
+      themeBtns.forEach(btn => btn.classList.toggle('selected', btn.dataset.theme === theme));
+    }
+    // Load theme from storage
+    const savedTheme = localStorage.getItem('petpaths_theme') || 'light';
+    setTheme(savedTheme);
+    themeBtns.forEach(btn => {
+      btn.addEventListener('click', () => setTheme(btn.dataset.theme));
+    });
+  </script>
+</body>
+</html>

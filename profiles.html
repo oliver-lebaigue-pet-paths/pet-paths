@@ -5,26 +5,75 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<title>Profiles - Pet Paths</title>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-	<style>
-		body {
-			margin: 0;
-			font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-			background: #f3f3f3;
-			display: flex;
-			flex-direction: column;
-			min-height: 100vh;
-		}
-		.header {
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			padding: 15px 20px;
-			background: #fff;
-			font-size: 1.2rem;
-			font-weight: 600;
-			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-			position: relative;
-		}
+		<style>
+			:root {
+				--primary: #4a4fcf;
+				--primary-dark: #3a3fb0;
+				--bg: #f3f3f3;
+				--text: #222;
+				--btn-text: #fff;
+				--header-bg: #4a4fcf;
+				--header-text: #fff;
+			}
+			[data-theme="dark"] {
+				--primary: #222b45;
+				--primary-dark: #151a30;
+				--bg: #181a20;
+				--text: #f3f3f3;
+				--btn-text: #fff;
+				--header-bg: #222b45;
+				--header-text: #fff;
+			}
+			[data-theme="forest"] {
+				--primary: #388e3c;
+				--primary-dark: #256029;
+				--bg: #e8f5e9;
+				--text: #1b3a1b;
+				--btn-text: #fff;
+				--header-bg: #388e3c;
+				--header-text: #fff;
+			}
+			[data-theme="ocean"] {
+				--primary: #1976d2;
+				--primary-dark: #0d47a1;
+				--bg: #e3f2fd;
+				--text: #0d223a;
+				--btn-text: #fff;
+				--header-bg: #1976d2;
+				--header-text: #fff;
+			}
+			[data-theme="rose"] {
+				--primary: #d81b60;
+				--primary-dark: #880e4f;
+				--bg: #fff1f6;
+				--text: #3a1b2f;
+				--btn-text: #fff;
+				--header-bg: #d81b60;
+				--header-text: #fff;
+			}
+			body {
+				margin: 0;
+				font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+				background: var(--bg);
+				color: var(--text);
+				display: flex;
+				flex-direction: column;
+				min-height: 100vh;
+				transition: background 0.3s, color 0.3s;
+			}
+			.header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				padding: 15px 20px;
+				background: var(--header-bg);
+				color: var(--header-text);
+				font-size: 1.2rem;
+				font-weight: 600;
+				box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+				position: relative;
+				transition: background 0.3s, color 0.3s;
+			}
 		.header .icons {
 			display: flex;
 			gap: 12px;
@@ -40,11 +89,13 @@
 		}
 
 		.content {
-			flex: 1;
+			flex: 1 0 auto;
 			padding: 20px 20px 80px 20px; /* bottom padding to avoid footer */
 			max-width: 600px;
 			margin: 0 auto;
 			width: 100%;
+			display: flex;
+			flex-direction: column;
 		}
 		.profile-card {
 			background: #fff;
@@ -114,15 +165,17 @@
 			color: #777;
 		}
 		.footer {
-			background: #4a4fcf;
+			background: var(--primary);
 			display: flex;
 			justify-content: space-around;
 			padding: 14px 0 10px;
 			position: fixed;
+			left: 0;
 			bottom: 0;
 			width: 100%;
 			z-index: 1002;
 			box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.15);
+			transition: background 0.3s;
 		}
 		.footer a {
 			text-decoration: none;
@@ -139,7 +192,7 @@
 			content: "";
 			width: 50px;
 			height: 50px;
-			background: #4a4fcf;
+			background: var(--primary);
 			border-radius: 50%;
 			position: absolute;
 			top: -25px;
@@ -323,7 +376,14 @@
 	</style>
 </head>
 <body>
-	<div class="header">
+		<script>
+			// Theme loader for all pages
+			(function() {
+				const theme = localStorage.getItem('petpaths_theme') || 'light';
+				document.documentElement.setAttribute('data-theme', theme);
+			})();
+		</script>
+		<div class="header">
 		<span>Profiles</span>
 		<div class="icons">
 			<i class="fa-solid fa-user" id="authIcon" title="Sign In / Out"></i>
@@ -425,11 +485,13 @@
 
 	<!-- Footer -->
 	<div class="footer">
+		<a href="settings.html" aria-label="settings"><i class="fa-solid fa-gear"></i></a>
 		<a href="playdates.html" aria-label="Playdates"><i class="fa-solid fa-calendar"></i></a>
 		<a href="walks.html" aria-label="Walks"><i class="fa-solid fa-dog"></i></a>
-		<a href="/" aria-label="Home"><i class="fa-solid fa-house"></i></a>
+		<a href="index.html" aria-label="Home"><i class="fa-solid fa-house"></i></a>
 		<a class="active" href="profiles.html" aria-label="Profiles"><i class="fa-solid fa-user"></i></a>
-		<a href="feedback.html" aria-label="Chat"><i class="fa-solid fa-comment-dots"></i></a>
+		<a href="feedback.html"><i class="fa-solid fa-clipboard-list"></i></a>
+		<a href="admin.html"><i class="fa-solid fa-user-shield"></i></a>
 	</div>
 
 	<!-- Message Modal -->
@@ -610,10 +672,14 @@
 				authIcon.style.color = "#4a4fcf";
 				signedInUserSpan.style.display = "inline-block";
 				signedInUserSpan.textContent = currentUser.username;
+				// Save to localStorage (store username and key only for privacy)
+				localStorage.setItem("petpaths_currentUser", JSON.stringify({ username: currentUser.username, key: currentUser.key }));
 			} else {
 				authIcon.style.color = "black";
 				signedInUserSpan.style.display = "none";
 				signedInUserSpan.textContent = "";
+				// Remove from localStorage
+				localStorage.removeItem("petpaths_currentUser");
 			}
 			renderProfiles();
 		}
@@ -920,8 +986,37 @@
 			messageInput.value = "";
 		});
 
+		// Restore user from localStorage if possible
+		function tryRestoreUser() {
+			const saved = localStorage.getItem("petpaths_currentUser");
+			if (saved) {
+				try {
+					const { username, key } = JSON.parse(saved);
+					// Wait for profiles to load, then try to match
+					if (allProfiles && key && allProfiles[key] && allProfiles[key].username === username) {
+						setCurrentUser({ ...allProfiles[key], key });
+					} else if (allProfiles) {
+						// fallback: search by username
+						const foundEntry = Object.entries(allProfiles).find(
+							([k, val]) => val.username === username
+						);
+						if (foundEntry) {
+							const [foundKey, foundData] = foundEntry;
+							setCurrentUser({ ...foundData, key: foundKey });
+						}
+					}
+				} catch {}
+			}
+		}
+
 		// Initial loading of profiles
 		loadProfiles();
+		// After profiles load, try to restore user
+		const origRenderProfiles = renderProfiles;
+		renderProfiles = function() {
+			origRenderProfiles.apply(this, arguments);
+			if (!currentUser) tryRestoreUser();
+		};
 
 	</script>
 </body>

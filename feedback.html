@@ -6,19 +6,77 @@
     <title>Feedback - Pet Paths</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
     <style>
+        :root {
+            --primary: #4a4fcf;
+            --primary-dark: #3a3fb0;
+            --bg: #f3f3f3;
+            --text: #222;
+            --btn-text: #fff;
+            --header-bg: #4a4fcf;
+            --header-text: #fff;
+        }
+        [data-theme="dark"] {
+            --primary: #222b45;
+            --primary-dark: #151a30;
+            --bg: #181a20;
+            --text: #f3f3f3;
+            --btn-text: #fff;
+            --header-bg: #222b45;
+            --header-text: #fff;
+        }
+        [data-theme="forest"] {
+            --primary: #388e3c;
+            --primary-dark: #256029;
+            --bg: #e8f5e9;
+            --text: #1b3a1b;
+            --btn-text: #fff;
+            --header-bg: #388e3c;
+            --header-text: #fff;
+        }
+        [data-theme="ocean"] {
+            --primary: #1976d2;
+            --primary-dark: #0d47a1;
+            --bg: #e3f2fd;
+            --text: #0d223a;
+            --btn-text: #fff;
+            --header-bg: #1976d2;
+            --header-text: #fff;
+        }
+        [data-theme="rose"] {
+            --primary: #d81b60;
+            --primary-dark: #880e4f;
+            --bg: #fff1f6;
+            --text: #3a1b2f;
+            --btn-text: #fff;
+            --header-bg: #d81b60;
+            --header-text: #fff;
+        }
+        [data-theme="dark"] {
+            --primary: #222b45;
+            --primary-dark: #151a30;
+            --bg: #181a20;
+            --text: #f3f3f3;
+            --btn-text: #fff;
+            --header-bg: #222b45;
+            --header-text: #fff;
+        }
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background: #f3f3f3;
+            background: var(--bg);
+            color: var(--text);
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
         }
         .header {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 15px; background: #fff;
+            padding: 15px; background: var(--header-bg);
+            color: var(--header-text);
             font-size: 1.2rem; font-weight: bold;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: background 0.3s, color 0.3s;
         }
         .header .icons { display: flex; gap: 15px; font-size: 1.4rem; cursor: pointer; }
         .content {
@@ -33,7 +91,8 @@
             justify-content: flex-start;
         }
         .feedback-card {
-            background: #fff;
+            background: var(--card-bg, #23243a);
+            color: var(--card-text, var(--text));
             border-radius: 16px;
             box-shadow: 0 2px 10px rgba(60,60,60,0.08);
             border: 1.5px solid #e0e0de;
@@ -45,6 +104,16 @@
             flex-direction: column;
             gap: 1.2em;
             align-items: center;
+            transition: background 0.3s, color 0.3s;
+        }
+        /* Card background for theme */
+        :root {
+            --card-bg: #fff;
+            --card-text: #222;
+        }
+        [data-theme="dark"] {
+            --card-bg: #23243a;
+            --card-text: #f3f3f3;
         }
         .feedback-card h2 {
             color: #3a6ea5;
@@ -68,8 +137,8 @@
         .email-button {
             display: inline-block;
             padding: 10px 15px;
-            background-color: #4a4fcf;
-            color: white;
+            background-color: var(--primary);
+            color: var(--btn-text);
             text-decoration: none;
             border-radius: 8px;
             font-size: 1rem;
@@ -79,13 +148,13 @@
             text-align: center;
         }
         .email-button:hover {
-            background-color: #3a3fb0;
+            background-color: var(--primary-dark);
         }
         .google-form-link {
             margin-top: 16px;
             display: inline-block;
-            color: #fff;
-            background: #3a6ea5;
+            color: var(--btn-text);
+            background: var(--primary-dark);
             padding: 10px 18px;
             border-radius: 8px;
             text-decoration: none;
@@ -93,17 +162,18 @@
             transition: background 0.2s;
         }
         .google-form-link:hover {
-            background: #274a7a;
+            background: var(--primary);
         }
         .footer {
-            background: #4a4fcf; display: flex; justify-content: space-around;
+            background: var(--primary); display: flex; justify-content: space-around;
             padding: 14px 0 10px; position: fixed; bottom: 0; width: 100%;
             z-index: 1002;
+            transition: background 0.3s;
         }
         .footer a { text-decoration: none; color: black; font-size: 24px; flex: 1;
             display: flex; align-items: center; justify-content: center; position: relative; }
         .footer a.active::before {
-            content: ""; width: 50px; height: 50px; background: #4a4fcf; border-radius: 50%;
+            content: ""; width: 50px; height: 50px; background: var(--primary); border-radius: 50%;
             position: absolute; top: -25px; left: 50%; transform: translateX(-50%); z-index: 1;
         }
         .footer a.active i { font-size: 30px; transform: translateY(-5px); z-index: 2; }
@@ -119,6 +189,13 @@
     </style>
 </head>
 <body>
+    <script>
+        // Theme loader for all pages
+        (function() {
+            const theme = localStorage.getItem('petpaths_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
     <div class="header">
         <span>Feedback</span>
         <div class="icons">
@@ -138,11 +215,13 @@
         </div>
     </div>
     <div class="footer">
+        <a href="settings.html"><i class="fa-solid fa-gear"></i></a>
         <a href="playdates.html"><i class="fa-solid fa-calendar"></i></a>
         <a href="walks.html"><i class="fa-solid fa-dog"></i></a>
         <a href="index.html"><i class="fa-solid fa-house"></i></a>
         <a href="profiles.html"><i class="fa-solid fa-user"></i></a>
-        <a class="active" href="feedback.html"><i class="fa-solid fa-comment-dots"></i></a>
+        <a class="active" href="feedback.html"><i class="fa-solid fa-clipboard-list"></i></a>
+        <a href="admin.html"><i class="fa-solid fa-user-shield"></i></a>
     </div>
 </body>
 </html>
