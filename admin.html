@@ -6,6 +6,49 @@
   <title>Admin Control Panel - Pet Paths</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
   <style>
+    @media (max-width: 600px) {
+      html, body {
+        width: 100vw;
+        overflow-x: hidden !important;
+        margin: 0;
+        padding: 0;
+      }
+      .admin-card {
+        padding: 14px 6px 12px 6px;
+        width: 100%;
+        max-width: 100%;
+        border-radius: 0;
+        box-sizing: border-box;
+      }
+      .content {
+        padding: 14px 0 80px 0;
+        width: 100%;
+        max-width: 100%;
+        min-height: calc(100vh - 64px - 60px);
+        box-sizing: border-box;
+        margin: 0;
+      }
+      .header {
+        font-size: 1.05rem;
+        padding: 10px;
+        width: 100vw;
+        box-sizing: border-box;
+      }
+      .footer {
+        left: 0;
+        bottom: 0;
+        width: 100vw;
+        position: fixed;
+        box-sizing: border-box;
+      }
+      .footer a { font-size: 20px; }
+      .admin-btn { font-size: 0.98rem; padding: 10px 0; min-width: 90px; }
+      pre { font-size: 0.92em; }
+      #passwordForm .admin-card {
+        padding: 20px 22px;
+        max-width: 400px;
+      }
+    }
     :root {
       --primary: #4a4fcf;
       --primary-dark: #3a3fb0;
@@ -100,7 +143,7 @@
       width: 100%;
       max-width: 480px;
       display: flex;
-      flex-direction: column;
+      flex-direction:  column;
       gap: 1.2em;
       align-items: center;
       transition: background 0.3s, color 0.3s;
@@ -168,6 +211,48 @@
     }
     .admin-btn:hover { background: #3a3fb0; }
     .status-msg { margin-top: 10px; color: #3a6ea5; font-size: 1em; }
+    #passwordForm {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 50vh;
+      width: 100%;
+      max-width: 600px;
+    }
+    #passwordForm .admin-card {
+      max-width: 400px;
+      padding: 30px 24px;
+      text-align: center;
+    }
+    #passwordForm h2 {
+      color: #3a6ea5;
+      margin-bottom: 20px;
+    }
+    #passwordForm input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      border: 1.5px solid #e0e0de;
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-bottom: 15px;
+      box-sizing: border-box;
+      background: var(--card-bg, #fff);
+      color: var(--text);
+    }
+    #passwordForm input[type="password"]:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    #errorMsg {
+      color: #d32f2f;
+      font-size: 0.95em;
+      margin-top: 10px;
+      display: none;
+    }
+    #adminContent {
+      display: none;
+    }
   </style>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -227,36 +312,54 @@
     <i class="fa-solid fa-user-shield"></i>
   </div>
   <div class="content">
-    <div class="admin-card">
-      <h2 style="color:#3a6ea5;">In Development Mode</h2>
-      <label class="switch">
-        <input type="checkbox" id="devSwitch">
-        <span class="slider"></span>
-      </label>
-      <div>Current Status: <span id="devStatus">OFF</span></div>
+    <!-- Password Protection Form -->
+    <div id="passwordForm">
+      <div class="admin-card">
+        <h2><i class="fa-solid fa-lock"></i> Admin Access Required</h2>
+        <p style="text-align: center; margin-bottom: 20px; color: var(--text);">Enter the password to access the admin panel.</p>
+        <form id="passwordCheckForm">
+          <input type="password" id="adminPassword" placeholder="Enter password" required />
+          <button type="submit" class="admin-btn" style="width: 100%; margin-top: 5px;">
+            <i class="fa-solid fa-sign-in-alt"></i> Login
+          </button>
+        </form>
+        <div id="errorMsg">Incorrect password. Please try again.</div>
+      </div>
     </div>
-    <div class="admin-card">
-      <h2 style="color:#3a6ea5;">All Client Refresh</h2>
-      <button class="admin-btn" id="refreshBtn"><i class="fa-solid fa-arrows-rotate"></i> Trigger Refresh</button>
-      <div class="status-msg" id="refreshStatus"></div>
-      <div style="font-size:0.95em;color:#888;margin-top:8px;">All clients will reload when triggered.</div>
-    </div>
-    <div class="admin-card" style="background:#f8f8fa;font-size:0.98em;">
-      <b>To enable auto-refresh on other pages, add this snippet:</b>
-      <pre style="background:#eee;padding:10px 8px;border-radius:8px;overflow-x:auto;font-size:0.95em;">&lt;script type="module"&gt;
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        const firebaseConfig = { /* ...your config... */ };
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        onValue(ref(db, "admin/refresh"), snap => {
-          const val = snap.val();
-          if (val && (!window._lastRefresh || window._lastRefresh !== val)) {
-            window._lastRefresh = val;
-            if (val !== 0) location.reload();
-          }
-        });
-        &lt;/script&gt;</pre>
+
+    <!-- Admin Content (Hidden Initially) -->
+    <div id="adminContent">
+      <div class="admin-card">
+        <h2 style="color:#3a6ea5;">In Development Mode</h2>
+        <label class="switch">
+          <input type="checkbox" id="devSwitch">
+          <span class="slider"></span>
+        </label>
+        <div>Current Status: <span id="devStatus">OFF</span></div>
+      </div>
+      <div class="admin-card">
+        <h2 style="color:#3a6ea5;">All Client Refresh</h2>
+        <button class="admin-btn" id="refreshBtn"><i class="fa-solid fa-arrows-rotate"></i> Trigger Refresh</button>
+        <div class="status-msg" id="refreshStatus"></div>
+        <div style="font-size:0.95em;color:#888;margin-top:8px;">All clients will reload when triggered.</div>
+      </div>
+      <div class="admin-card" style="background:#f8f8fa;font-size:0.98em;">
+        <b>To enable auto-refresh on other pages, add this snippet:</b>
+        <pre style="background:#eee;padding:10px 8px;border-radius:8px;overflow-x:auto;font-size:0.95em;">&lt;script type="module"&gt;
+          import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+          import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+          const firebaseConfig = { /* ...your config... */ };
+          const app = initializeApp(firebaseConfig);
+          const db = getDatabase(app);
+          onValue(ref(db, "admin/refresh"), snap => {
+            const val = snap.val();
+            if (val && (!window._lastRefresh || window._lastRefresh !== val)) {
+              window._lastRefresh = val;
+              if (val !== 0) location.reload();
+            }
+          });
+          &lt;/script&gt;</pre>
+      </div>
     </div>
   </div>
   <div class="footer">
@@ -268,5 +371,34 @@
     <a href="feedback.html"><i class="fa-solid fa-clipboard-list"></i></a>
     <a class="active" href="admin.html"><i class="fa-solid fa-user-shield"></i></a>
   </div>
+
+  <script>
+    // Password Protection Logic
+    const correctPassword = "Onniecat123!";
+    const passwordForm = document.getElementById("passwordCheckForm");
+    const passwordInput = document.getElementById("adminPassword");
+    const errorMsg = document.getElementById("errorMsg");
+    const adminContent = document.getElementById("adminContent");
+    const passwordSection = document.getElementById("passwordForm");
+
+    passwordForm.addEventListener("submit", function(e) {
+      e.preventDefault();
+      if (passwordInput.value === correctPassword) {
+        passwordSection.style.display = "none";
+        adminContent.style.display = "block";
+        // Optional: Clear the input for security
+        passwordInput.value = "";
+      } else {
+        errorMsg.style.display = "block";
+        passwordInput.value = "";
+        passwordInput.focus();
+      }
+    });
+
+    // Focus on password input when page loads
+    window.addEventListener("load", function() {
+      passwordInput.focus();
+    });
+  </script>
 </body>
 </html>

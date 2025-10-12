@@ -126,8 +126,35 @@
     }
     .footer a.active i { font-size: 30px; transform: translateY(-5px); z-index: 2; }
     @media (max-width: 600px) {
-      .settings-card { padding: 14px 6px 12px 6px; }
-      .content { padding: 18px 2vw 80px 2vw; }
+      html, body {
+        width: 100vw;
+        overflow-x: hidden !important;
+        margin: 0;
+        padding: 0;
+      }
+      .settings-card {
+        padding: 14px 6px 12px 6px;
+        width: 100%;
+        max-width: 100%;
+        border-radius: 0;
+        box-sizing: border-box;
+      }
+      .content {
+        padding: 18px 0 80px 0;
+        width: 100%;
+        max-width: 100%;
+        min-height: calc(100vh - 64px - 60px);
+        box-sizing: border-box;
+        margin: 0;
+        width: 80%;
+        align-self: center;
+      }
+      .theme-switcher { flex-wrap: wrap; gap: 10px; width: 80%;}
+      .theme-btn { font-size: 0.98rem; padding: 10px 10px; min-width: 90px; }
+      .header { font-size: 1.05rem; padding: 10px; width: 100vw; box-sizing: border-box; }
+      .footer { left: 0; bottom: 0; width: 100vw; position: fixed; box-sizing: border-box; }
+      .footer a { font-size: 20px; }
+      #password-overlay > div { padding: 18px 6px; max-width: 98vw; }
     }
   </style>
 </head>
@@ -140,11 +167,14 @@
     <div class="settings-card">
       <h2 style="color:var(--primary-dark);">Theme</h2>
       <div class="theme-switcher">
-        <button class="theme-btn" data-theme="light"><i class="fa-regular fa-sun"></i> Light</button>
-        <button class="theme-btn" data-theme="dark"><i class="fa-regular fa-moon"></i> Dark</button>
-        <button class="theme-btn" data-theme="forest" style="background:#388e3c"><i class="fa-solid fa-tree"></i> Forest</button>
-        <button class="theme-btn" data-theme="ocean" style="background:#1976d2"><i class="fa-solid fa-water"></i> Ocean</button>
-        <button class="theme-btn" data-theme="rose" style="background:#e91e63"><i class="fa-solid fa-heart"></i> Rose</button>
+        <center>
+          <button class="theme-btn" data-theme="light" style="margin: 5px 5px 5px 0;"><i class="fa-regular fa-sun"></i> Light</button>
+          <button class="theme-btn" data-theme="dark"><i class="fa-regular fa-moon"></i> Dark</button>
+          <button class="theme-btn" data-theme="forest" style="background:#388e3c"><i class="fa-solid fa-tree"></i> Forest</button>
+          <button class="theme-btn" data-theme="ocean" style="background:#1976d2"><i class="fa-solid fa-water"></i> Ocean</button>
+          <button class="theme-btn" data-theme="rose" style="background:#e91e63"><i class="fa-solid fa-heart"></i> Rose</button>
+          <button class="theme-btn" style="background:linear-gradient(45deg,#ff4081,#d5006d);color:white;font-weight:bold;padding:10px 20px;border:none;border-radius:12px;box-shadow:0 4px 6px rgba(0,0,0,0.2);display:inline-flex;align-items:center;gap:8px;cursor:pointer;animation:pulse 1.5s infinite alternate;"><i class="fa-solid fa-hammer"></i> upcoming!</button><style>@keyframes pulse{0%{transform:scale(1)}100%{transform:scale(1.05)}}</style>
+        </center>
       </div>
       <div style="margin-top:10px;font-size:0.98em;color:#888;">Choose your preferred color and text theme.</div>
     </div>
