@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Control Panel - Pet Paths</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <style>
+    @media (max-width: 600px) {
+      html, body {
+        width: 100vw;
+        overflow-x: hidden !important;
+        margin: 0;
+        padding: 0;
+      }
+      .admin-card {
+        padding: 14px 6px 12px 6px;
+        width: 100%;
+        max-width: 100%;
+        border-radius: 0;
+        box-sizing: border-box;
+      }
+      .content {
+        padding: 14px 0 80px 0;
+        width: 100%;
+        max-width: 100%;
+        min-height: calc(100vh - 64px - 60px);
+        box-sizing: border-box;
+        margin: 0;
+      }
+      .header {
+        font-size: 1.05rem;
+        padding: 10px;
+        width: 100vw;
+        box-sizing: border-box;
+      }
+      .footer {
+        left: 0;
+        bottom: 0;
+        width: 100vw;
+        position: fixed;
+        box-sizing: border-box;
+      }
+      .footer a { font-size: 20px; }
+      .admin-btn { font-size: 0.98rem; padding: 10px 0; min-width: 90px; }
+      pre { font-size: 0.92em; }
+      #passwordForm .admin-card {
+        padding: 20px 22px;
+        max-width: 400px;
+      }
+    }
+    :root {
+      --primary: #4a4fcf;
+      --primary-dark: #3a3fb0;
+      --bg: #f3f3f3;
+      --text: #222;
+      --btn-text: #fff;
+      --header-bg: #4a4fcf;
+      --header-text: #fff;
+    }
+    [data-theme="dark"] {
+      --primary: #222b45;
+      --primary-dark: #151a30;
+      --bg: #181a20;
+      --text: #f3f3f3;
+      --btn-text: #fff;
+      --header-bg: #222b45;
+      --header-text: #fff;
+    }
+    [data-theme="forest"] {
+      --primary: #388e3c;
+      --primary-dark: #256029;
+      --bg: #e8f5e9;
+      --text: #1b3a1b;
+      --btn-text: #fff;
+      --header-bg: #388e3c;
+      --header-text: #fff;
+    }
+    [data-theme="ocean"] {
+      --primary: #1976d2;
+      --primary-dark: #0d47a1;
+      --bg: #e3f2fd;
+      --text: #0d223a;
+      --btn-text: #fff;
+      --header-bg: #1976d2;
+      --header-text: #fff;
+    }
+    [data-theme="rose"] {
+      --primary: #d81b60;
+      --primary-dark: #880e4f;
+      --bg: #fff1f6;
+      --text: #3a1b2f;
+      --btn-text: #fff;
+      --header-bg: #d81b60;
+      --header-text: #fff;
+    }
+    [data-theme="dark"] {
+      --primary: #222b45;
+      --primary-dark: #151a30;
+      --bg: #181a20;
+      --text: #f3f3f3;
+      --btn-text: #fff;
+      --header-bg: #222b45;
+      --header-text: #fff;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 15px; background: var(--header-bg);
+      color: var(--header-text);
+      font-size: 1.2rem; font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: background 0.3s, color 0.3s;
+    }
+    .content {
+      flex: 1;
+      padding: 24px 16px 80px 16px;
+      max-width: 600px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .admin-card {
+      background: var(--card-bg, #23243a);
+      color: var(--card-text, var(--text));
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(60,60,60,0.08);
+      border: 1.5px solid #e0e0de;
+      padding: 24px 22px 18px 22px;
+      margin-top: 30px;
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction:  column;
+      gap: 1.2em;
+      align-items: center;
+      transition: background 0.3s, color 0.3s;
+    }
+    /* Card background for theme */
+    :root {
+      --card-bg: #fff;
+      --card-text: #222;
+    }
+    [data-theme="dark"] {
+      --card-bg: #23243a;
+      --card-text: #f3f3f3;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+    .switch input {display:none;}
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #4a4fcf;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    .footer {
+      background: var(--primary); display: flex; justify-content: space-around;
+      padding: 14px 0 10px; position: fixed; bottom: 0; width: 100%;
+      z-index: 1002;
+      transition: background 0.3s;
+    }
+    .footer a { text-decoration: none; color: black; font-size: 24px; flex: 1;
+      display: flex; align-items: center; justify-content: center; position: relative; }
+    .footer a.active::before {
+      content: ""; width: 50px; height: 50px; background: var(--primary); border-radius: 50%;
+      position: absolute; top: -25px; left: 50%; transform: translateX(-50%); z-index: 1;
+    }
+    .footer a.active i { font-size: 30px; transform: translateY(-5px); z-index: 2; }
+    .admin-btn {
+      background: #4a4fcf; color: #fff; border: none;
+      padding: 12px 22px; border-radius: 10px;
+      font-size: 1rem; font-weight: 600;
+      cursor: pointer; margin-top: 10px;
+      transition: background 0.2s;
+    }
+    .admin-btn:hover { background: #3a3fb0; }
+    .status-msg { margin-top: 10px; color: #3a6ea5; font-size: 1em; }
+    #passwordForm {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 50vh;
+      width: 100%;
+      max-width: 600px;
+    }
+    #passwordForm .admin-card {
+      max-width: 400px;
+      padding: 30px 24px;
+      text-align: center;
+    }
+    #passwordForm h2 {
+      color: #3a6ea5;
+      margin-bottom: 20px;
+    }
+    #passwordForm input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      border: 1.5px solid #e0e0de;
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-bottom: 15px;
+      box-sizing: border-box;
+      background: var(--card-bg, #fff);
+      color: var(--text);
+    }
+    #passwordForm input[type="password"]:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    #errorMsg {
+      color: #d32f2f;
+      font-size: 0.95em;
+      margin-top: 10px;
+      display: none;
+    }
+    #adminContent {
+      display: none;
+    }
+  </style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMuOymY5KniYJgg51vkhcYWxXeyXAyFk0",
+      authDomain: "pet-paths.firebaseapp.com",
+      databaseURL: "https://pet-paths-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "pet-paths",
+      storageBucket: "pet-paths.firebasestorage.app",
+      messagingSenderId: "5202022310",
+      appId: "1:5202022310:web:55991fbd2be58294bfc967",
+      measurementId: "G-SW8L37HRVV"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const adminRef = ref(db, "admin");
+
+    // In Development Mode toggle
+    const devSwitch = () => document.getElementById("devSwitch");
+    const devStatus = document.getElementById("devStatus");
+    onValue(ref(db, "admin/inDevelopment"), snap => {
+      const val = !!snap.val();
+      devSwitch().checked = val;
+      devStatus.textContent = val ? "ON" : "OFF";
+    });
+    devSwitch().addEventListener("change", async e => {
+      await set(ref(db, "admin/inDevelopment"), devSwitch().checked);
+      devStatus.textContent = devSwitch().checked ? "ON" : "OFF";
+    });
+
+    // All Client Refresh
+    const refreshBtn = document.getElementById("refreshBtn");
+    const refreshStatus = document.getElementById("refreshStatus");
+    refreshBtn.addEventListener("click", async () => {
+      const newVal = Date.now();
+      await set(ref(db, "admin/refresh"), newVal);
+      refreshStatus.textContent = "Triggered!";
+      setTimeout(async () => {
+        await set(ref(db, "admin/refresh"), 0);
+        refreshStatus.textContent = "";
+      }, 1200);
+    });
+  </script>
+</head>
+<body>
+  <script>
+    // Theme loader for all pages
+    (function() {
+      const theme = localStorage.getItem('petpaths_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <div class="header">
+    <span>Admin Control Panel</span>
+    <i class="fa-solid fa-user-shield"></i>
+  </div>
+  <div class="content">
+    <!-- Password Protection Form -->
+    <div id="passwordForm">
+      <div class="admin-card">
+        <h2><i class="fa-solid fa-lock"></i> Admin Access Required</h2>
+        <p style="text-align: center; margin-bottom: 20px; color: var(--text);">Enter the password to access the admin panel.</p>
+        <form id="passwordCheckForm">
+          <input type="password" id="adminPassword" placeholder="Enter password" required />
+          <button type="submit" class="admin-btn" style="width: 100%; margin-top: 5px;">
+            <i class="fa-solid fa-sign-in-alt"></i> Login
+          </button>
+        </form>
+        <div id="errorMsg">Incorrect password. Please try again.</div>
+      </div>
+    </div>
+
+    <!-- Admin Content (Hidden Initially) -->
+    <div id="adminContent">
+      <div class="admin-card">
+        <h2 style="color:#3a6ea5;">In Development Mode</h2>
+        <label class="switch">
+          <input type="checkbox" id="devSwitch">
+          <span class="slider"></span>
+        </label>
+        <div>Current Status: <span id="devStatus">OFF</span></div>
+      </div>
+      <div class="admin-card">
+        <h2 style="color:#3a6ea5;">All Client Refresh</h2>
+        <button class="admin-btn" id="refreshBtn"><i class="fa-solid fa-arrows-rotate"></i> Trigger Refresh</button>
+        <div class="status-msg" id="refreshStatus"></div>
+        <div style="font-size:0.95em;color:#888;margin-top:8px;">All clients will reload when triggered.</div>
+      </div>
+      <div class="admin-card" style="background:#f8f8fa;font-size:0.98em;">
+        <b>To enable auto-refresh on other pages, add this snippet:</b>
+        <pre style="background:#eee;padding:10px 8px;border-radius:8px;overflow-x:auto;font-size:0.95em;">&lt;script type="module"&gt;
+          import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+          import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+          const firebaseConfig = { /* ...your config... */ };
+          const app = initializeApp(firebaseConfig);
+          const db = getDatabase(app);
+          onValue(ref(db, "admin/refresh"), snap => {
+            const val = snap.val();
+            if (val && (!window._lastRefresh || window._lastRefresh !== val)) {
+              window._lastRefresh = val;
+              if (val !== 0) location.reload();
+            }
+          });
+          &lt;/script&gt;</pre>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <a href="settings.html"><i class="fa-solid fa-gear"></i></a>
+    <a href="playdates.html"><i class="fa-solid fa-calendar"></i></a>
+    <a href="walks.html"><i class="fa-solid fa-dog"></i></a>
+    <a href="index.html"><i class="fa-solid fa-house"></i></a>
+    <a href="profiles.html"><i class="fa-solid fa-user"></i></a>
+    <a href="feedback.html"><i class="fa-solid fa-clipboard-list"></i></a>
+    <a class="active" href="admin.html"><i class="fa-solid fa-user-shield"></i></a>
+  </div>
+
+  <script>
+    // Password Protection Logic
+    const correctPassword = "Onniecat123!";
+    const passwordForm = document.getElementById("passwordCheckForm");
+    const passwordInput = document.getElementById("adminPassword");
+    const errorMsg = document.getElementById("errorMsg");
+    const adminContent = document.getElementById("adminContent");
+    const passwordSection = document.getElementById("passwordForm");
+
+    passwordForm.addEventListener("submit", function(e) {
+      e.preventDefault();
+      if (passwordInput.value === correctPassword) {
+        passwordSection.style.display = "none";
+        adminContent.style.display = "block";
+        // Optional: Clear the input for security
+        passwordInput.value = "";
+      } else {
+        errorMsg.style.display = "block";
+        passwordInput.value = "";
+        passwordInput.focus();
+      }
+    });
+
+    // Focus on password input when page loads
+    window.addEventListener("load", function() {
+      passwordInput.focus();
+    });
+  </script>
+</body>
+</html>

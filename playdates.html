@@ -1,0 +1,565 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>playdates - Pet Paths</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css"/>
+  <style>
+    :root {
+      --primary: #4a4fcf;
+      --primary-dark: #3a3fb0;
+      --bg: #f3f3f3;
+      --text: #222;
+      --btn-text: #fff;
+      --header-bg: #4a4fcf;
+      --header-text: #fff;
+    }
+    [data-theme="dark"] {
+      --primary: #222b45;
+      --primary-dark: #151a30;
+      --bg: #181a20;
+      --text: #f3f3f3;
+      --btn-text: #fff;
+      --header-bg: #222b45;
+      --header-text: #fff;
+    }
+    [data-theme="forest"] {
+      --primary: #388e3c;
+      --primary-dark: #256029;
+      --bg: #e8f5e9;
+      --text: #1b3a1b;
+      --btn-text: #fff;
+      --header-bg: #388e3c;
+      --header-text: #fff;
+    }
+    [data-theme="ocean"] {
+      --primary: #1976d2;
+      --primary-dark: #0d47a1;
+      --bg: #e3f2fd;
+      --text: #0d223a;
+      --btn-text: #fff;
+      --header-bg: #1976d2;
+      --header-text: #fff;
+    }
+    [data-theme="rose"] {
+      --primary: #d81b60;
+      --primary-dark: #880e4f;
+      --bg: #fff1f6;
+      --text: #3a1b2f;
+      --btn-text: #fff;
+      --header-bg: #d81b60;
+      --header-text: #fff;
+    }
+    [data-theme="dark"] {
+      --primary: #222b45;
+      --primary-dark: #151a30;
+      --bg: #181a20;
+      --text: #f3f3f3;
+      --btn-text: #fff;
+      --header-bg: #222b45;
+      --header-text: #fff;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 15px; background: var(--header-bg);
+      color: var(--header-text);
+      font-size: 1.2rem; font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: background 0.3s, color 0.3s;
+    }
+    .header .icons { display: flex; gap: 15px; font-size: 1.4rem; cursor: pointer; }
+
+    .content { flex: 1; padding: 15px; }
+    .status-card {
+      background: var(--card-bg, #23243a);
+      color: var(--card-text, var(--text));
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(60,60,60,0.08);
+      border: 1.5px solid #e0e0de;
+      margin-bottom: 18px; padding: 18px 20px 14px 20px;
+      transition: background 0.3s, color 0.3s;
+    }
+    .status-card-header {
+      display: flex; justify-content: space-between;
+      margin-bottom: 10px; gap: 1em;
+    }
+    .status-type {
+      font-size: 1.1em; font-weight: 600;
+      display: flex; align-items: center; gap: 0.5em;
+    }
+    .status-type.walking { color: #4CAF50; }
+    .status-type.not-walking { color: #F44336; }
+    .status-type.planning-to-walk { color: #FFC107; }
+    .status-user {
+      font-size: 0.95em; background: var(--bg);
+      border-radius: 8px; padding: 2px 10px;
+      display: flex; align-items: center; gap: 0.4em;
+    }
+    .status-details-row { display: flex; flex-wrap: wrap; gap: 1em; font-size: 0.95em; margin: 10px 0; }
+    .status-notes {
+      background: var(--note-bg, #2a2b3d);
+      border-left: 3px solid var(--primary);
+      border-radius: 7px; padding: 7px 12px; margin-top: 8px; font-size: 0.95em;
+      color: var(--text);
+      transition: background 0.3s, color 0.3s;
+    }
+    .status-mini-map {
+      height: 120px;
+      border-radius: 8px;
+      border: 1px solid #e0e0de;
+      margin-top: 8px;
+      z-index: 1;
+      position: relative;
+    }
+
+    #loadingSpinner, #emptyState { text-align: center; padding: 20px; font-size: 1rem; color: #555; }
+
+    /* Footer */
+    .footer {
+      background: var(--primary); display: flex; justify-content: space-around;
+      padding: 14px 0 10px; position: fixed; bottom: 0; width: 100%;
+      z-index: 1002;
+      transition: background 0.3s;
+    }
+    .footer a { text-decoration: none; color: black; font-size: 24px; flex: 1;
+      display: flex; align-items: center; justify-content: center; position: relative; }
+    .footer a.active::before {
+      content: ""; width: 50px; height: 50px; background: var(--primary); border-radius: 50%;
+      position: absolute; top: -25px; left: 50%; transform: translateX(-50%); z-index: 1;
+    }
+    .footer a.active i { font-size: 30px; transform: translateY(-5px); z-index: 2; }
+
+    /* Modal base */
+    .modal {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 1000;
+    }
+    .modal.hidden { display: none; }
+    .modal-content {
+      max-width: 700px;
+      width: 98vw;
+      background: var(--card-bg, #23243a);
+      color: var(--card-text, var(--text));
+      max-height: 80vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      border-radius: 18px;
+      box-shadow: 0 4px 32px rgba(60,60,60,0.18);
+      padding: 28px 6vw 22px 6vw;
+      gap: 1.2em;
+      transition: background 0.3s, color 0.3s;
+    }
+    .modal-form-section {
+      margin-bottom: 22px;
+    }
+    .modal-form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 10px;
+    }
+    .modal-form-row label {
+      margin-bottom: 0;
+    }
+    @media (max-width: 600px) {
+      .modal-content {
+        max-width: 98vw;
+        padding: 18px 2vw 16px 2vw;
+      }
+      .modal-form-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .modal-form-section {
+        margin-bottom: 14px;
+      }
+      .modal-content h3 {
+        font-size: 1.1rem;
+      }
+      .modal-content button {
+        font-size: 1rem;
+        padding: 12px;
+      }
+    }
+    .modal-form-divider {
+      border: none;
+      border-top: 1px solid #e0e0de;
+      margin: 18px 0 10px 0;
+    }
+    .modal-content h3 {
+      text-align: center;
+      margin-bottom: 15px;
+      color: var(--primary);
+    }
+    /* Card background for theme */
+    :root {
+      --card-bg: #fff;
+      --card-text: #222;
+      --note-bg: #f8f8fa;
+    }
+    [data-theme="dark"] {
+      --card-bg: #23243a;
+      --card-text: #f3f3f3;
+      --note-bg: #2a2b3d;
+    }
+    .modal-content button {
+      background: #4a4fcf; color: #fff; border: none;
+      padding: 10px 16px; border-radius: 8px;
+      cursor: pointer; font-size: 1rem;
+    }
+    .modal-content label { 
+      display: block; margin: 10px 0; font-weight: 500; 
+    }
+    .modal-content input, .modal-content select, .modal-content textarea {
+      width: 100%; padding: 8px 10px; margin-top: 4px; border-radius: 8px;
+      border: 1px solid #ccc; font-size: 0.95rem;
+    }
+    .modal-content textarea { resize: vertical; min-height: 60px; }
+    .modal-content button:hover { background: #3a3fb0; }
+    #map {
+      height: 200px;          /* fixed max height */
+      max-height: 40vh;       /* never taller than 40% of viewport */
+      margin: 10px 0;
+      border-radius: 8px;
+      z-index: 10;
+      position: relative;
+    }
+
+    /* Filter modal */
+    .filter-options label { display: block; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <script>
+    // Theme loader for all pages
+    (function() {
+      const theme = localStorage.getItem('petpaths_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <div class="header">
+    <span>playdates</span>
+    <div class="icons">
+      <i class="fa-solid fa-plus" id="addWalk"></i>
+      <i class="fa-solid fa-filter" id="filterWalks"></i>
+    </div>
+  </div>
+
+  <div class="content">
+    <div id="loadingSpinner">Loading playdates...</div>
+    <div id="emptyState" style="display:none;">No playdates yet.</div>
+    <div id="statusList"></div>
+  </div>
+
+  <!-- Add playdate Modal -->
+  <div id="walkModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Add playdate</h3>
+      <form id="walkForm">
+        <div class="modal-form-section">
+          <label>Status:
+            <select id="walkingStatus" required>
+              <option value="walking">Walking</option>
+              <option value="not walking">Not Walking</option>
+              <option value="planning to walk">Planning to walk</option>
+            </select>
+          </label>
+        </div>
+        <div class="modal-form-section modal-form-row">
+          <label>Date:
+            <input type="date" id="walkDate" style="padding-right: 5px !important;"required/>
+          </label>
+          <label>Start Time:
+            <input type="time" id="startTime" required/>
+          </label>
+        </div>
+        <div class="modal-form-section">
+          <label>Duration:
+            <input type="number" id="walkDuration" min="5" max="240" value="30" style="width:90px;"/> minutes
+          </label>
+        </div>
+        <hr class="modal-form-divider"/>
+        <div class="modal-form-section">
+          <label>Location:
+            <input type="text" id="location" required/>
+          </label>
+          <div id="map" style="margin-bottom:8px;"></div>
+          <input type="hidden" id="mapLat"/>
+          <input type="hidden" id="mapLng"/>
+        </div>
+        <hr class="modal-form-divider"/>
+        <div class="modal-form-section modal-form-row">
+          <label>Dog Status:
+            <select id="dogStatus" required>
+              <option value="Friendly">Friendly</option>
+              <option value="Nervous">Nervous</option>
+              <option value="Not Friendly">Not Friendly</option>
+            </select>
+          </label>
+          <label>Safety:
+            <select id="safetyOptions" required>
+              <option value="safe">Safe</option>
+              <option value="unsafe">Unsafe</option>
+              <option value="unknown">Unknown</option>
+            </select>
+          </label>
+        </div>
+        <div class="modal-form-section">
+          <label>Notes:
+            <textarea id="otherNotes" maxlength="200" placeholder="Optional notes..."></textarea>
+          </label>
+        </div>
+        <button type="submit" style="margin-top:8px;">Submit Walk</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Filter Modal -->
+  <div id="filterModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Filter Walks</h3>
+      <div class="filter-options">
+        <label><input type="radio" name="filter" value="all" checked> All Walks</label>
+        <label><input type="radio" name="filter" value="walking"> Walking Only</label>
+        <label><input type="radio" name="filter" value="not walking"> Not Walking</label>
+        <label><input type="radio" name="filter" value="planning to walk"> Planning to Walk</label>
+        <label><input type="radio" name="filter" value="safe"> Safe Only</label>
+        <label><input type="radio" name="filter" value="unsafe"> Unsafe Only</label>
+        <label><input type="radio" name="filter" value="unknown"> Unknown Safety</label>
+      </div>
+      <br>
+      <button id="applyFilter">Apply</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <a href="settings.html"><i class="fa-solid fa-gear"></i></a>
+    <a href="playdates.html" class="active"><i class="fa-solid fa-calendar"></i></a>
+    <a href='walks.html'><i class="fa-solid fa-dog"></i></a>
+    <a href='index.html'><i class="fa-solid fa-house"></i></a>
+    <a href="profiles.html"><i class="fa-solid fa-user"></i></a>
+    <a href="feedback.html"><i class="fa-solid fa-clipboard-list"></i></a>
+    <a href="admin.html"><i class="fa-solid fa-user-shield"></i></a>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMuOymY5KniYJgg51vkhcYWxXeyXAyFk0",
+      authDomain: "pet-paths.firebaseapp.com",
+      databaseURL: "https://pet-paths-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "pet-paths",
+      storageBucket: "pet-paths.firebasestorage.app",
+      messagingSenderId: "5202022310",
+      appId: "1:5202022310:web:55991fbd2be58294bfc967",
+      measurementId: "G-SW8L37HRVV"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    // Listen for admin/refresh value to trigger reload
+    import { onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    onValue(ref(db, "admin/refresh"), snap => {
+      const val = snap.val();
+      if (val && (!window._lastRefresh || window._lastRefresh !== val)) {
+        window._lastRefresh = val;
+        if (val !== 0) location.reload();
+      }
+    });
+    const statusRef = ref(db, "narberthDoggyPlaydates");
+
+    const statusListEl = document.getElementById("statusList");
+    const loadingSpinner = document.getElementById("loadingSpinner");
+    const emptyStateEl = document.getElementById("emptyState");
+
+    let allStatuses = {};
+    let currentFilter = "all";
+
+    function getCurrentUsername() {
+      try {
+        const u = JSON.parse(localStorage.getItem("petpaths_currentUser"));
+        return u && u.username ? u.username : null;
+      } catch { return null; }
+    }
+
+    function createStatusCard(data, key) {
+      const div = document.createElement("div");
+      div.className = "status-card";
+      const mapId = `map-${key}`;
+      // Determine if delete button should be shown
+      const currentUser = getCurrentUsername();
+      const canDelete = currentUser && (currentUser === "admin" || currentUser === data.user);
+      div.innerHTML = `
+        <div class="status-card-header">
+          <span class="status-type ${data.status.replace(/\s+/g,'-').toLowerCase()}">
+            <i class="fa-solid fa-dog"></i> ${data.status}
+          </span>
+          <span class="status-user"><i class="fa-solid fa-user"></i> ${data.user || "Anonymous"}</span>
+          ${canDelete ? `<button class="delete-status-btn" data-key="${key}" title="Delete" style="margin-left:10px;background:#d9534f;color:#fff;border:none;border-radius:6px;padding:2px 10px;cursor:pointer;font-size:0.95em;"><i class='fa fa-trash'></i> Delete</button>` : ""}
+        </div>
+        <div><i class="fa-solid fa-map-marker-alt"></i> ${data.location}</div>
+        ${data.lat && data.lng ? `<div id="${mapId}" class="status-mini-map"></div>` : ""}
+        <div class="status-details-row">
+          <div><i class="fa-regular fa-clock"></i> Start: ${data.startTime}</div>
+          <div><i class="fa-solid fa-hourglass-end"></i> Duration: ${data.duration} min</div>
+          <div><i class="fa-solid fa-dog"></i> Dog: ${data.dogStatus}</div>
+          <div><i class="fa-solid fa-shield-alt"></i> Safety: ${data.safety}</div>
+        </div>
+        ${data.notes ? `<div class="status-notes"><i class="fa-solid fa-note-sticky"></i> ${data.notes}</div>` : ""}
+      `;
+      if (data.lat && data.lng) {
+        setTimeout(() => {
+          const [swLat, neLat] = data.lat.split(",");
+          const [swLng, neLng] = data.lng.split(",");
+          const map = L.map(mapId, { attributionControl:false, zoomControl:false, dragging:false })
+            .setView([(+swLat+ +neLat)/2, (+swLng+ +neLng)/2], 15);
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+          L.rectangle([[+swLat,+swLng],[+neLat,+neLng]], { color:"#3a6ea5", weight:2, fillOpacity:0.2 }).addTo(map);
+          map.fitBounds([[+swLat,+swLng],[+neLat,+neLng]]);
+        }, 0);
+      }
+      return div;
+    }
+    // Delete playdate logic
+    import { remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    document.addEventListener("click", function(e) {
+      if (e.target && (e.target.classList.contains("delete-status-btn") || (e.target.closest && e.target.closest(".delete-status-btn")))) {
+        const btn = e.target.classList.contains("delete-status-btn") ? e.target : e.target.closest(".delete-status-btn");
+        const key = btn.getAttribute("data-key");
+        if (key && confirm("Are you sure you want to delete this playdate?")) {
+          remove(ref(db, `narberthDoggyPlaydates/${key}`));
+          // Remove from local state and re-render
+          delete allStatuses[key];
+          renderStatuses();
+        }
+      }
+    });
+
+    function renderStatuses() {
+      statusListEl.innerHTML = "";
+      let filteredStatuses = Object.entries(allStatuses)
+        .filter(([key, data]) => currentFilter === "all" ||
+          data.status.toLowerCase() === currentFilter ||
+          data.safety.toLowerCase() === currentFilter
+        )
+        .sort((a, b) => b[1].timestamp - a[1].timestamp); // newest first
+
+      if (filteredStatuses.length === 0) {
+        emptyStateEl.style.display = "block";
+      } else {
+        emptyStateEl.style.display = "none";
+      }
+
+      filteredStatuses.forEach(([key, data]) => {
+        statusListEl.appendChild(createStatusCard(data, key));
+      });
+
+      loadingSpinner.style.display = "none";
+    }
+
+    onChildAdded(statusRef, (snap) => {
+      allStatuses[snap.key] = snap.val();
+      renderStatuses();
+    });
+
+    // Modal handling
+    const walkModal = document.getElementById("walkModal");
+    const filterModal = document.getElementById("filterModal");
+    const mapLat = document.getElementById("mapLat");
+    const mapLng = document.getElementById("mapLng");
+    let drawnItems, drawMap;
+
+    document.getElementById("addWalk").addEventListener("click", () => {
+      walkModal.classList.remove("hidden");
+      setTimeout(() => {
+        if (!drawMap) {
+          drawMap = L.map("map").setView([51.797, -4.742], 15);
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(drawMap);
+          drawnItems = new L.FeatureGroup().addTo(drawMap);
+          new L.Control.Draw({
+            draw: { marker:false, polyline:false, circle:false, circlemarker:false, polygon:false,
+              rectangle:{ shapeOptions:{ color:"#3a6ea5" } } },
+            edit: { featureGroup: drawnItems }
+          }).addTo(drawMap);
+          drawMap.on(L.Draw.Event.CREATED, function (e) {
+            drawnItems.clearLayers();
+            drawnItems.addLayer(e.layer);
+            const b = e.layer.getBounds();
+            mapLat.value = `${b.getSouthWest().lat},${b.getNorthEast().lat}`;
+            mapLng.value = `${b.getSouthWest().lng},${b.getNorthEast().lng}`;
+          });
+          drawMap.invalidateSize(); // prevent map from overlapping footer
+        }
+      }, 200);
+    });
+
+    document.getElementById("filterWalks").addEventListener("click", () => {
+      filterModal.classList.remove("hidden");
+    });
+
+    walkModal.addEventListener("click", (e) => {
+      if (e.target === walkModal) {
+        walkModal.classList.add("hidden");
+        if (drawMap) drawMap.invalidateSize();
+      }
+    });
+    filterModal.addEventListener("click", (e) => { if (e.target === filterModal) filterModal.classList.add("hidden"); });
+
+    document.getElementById("walkForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const data = {
+        status: document.getElementById("walkingStatus").value,
+        date: document.getElementById("walkDate").value,
+        location: document.getElementById("location").value,
+        startTime: document.getElementById("startTime").value,
+        duration: document.getElementById("walkDuration").value,
+        dogStatus: document.getElementById("dogStatus").value,
+        safety: document.getElementById("safetyOptions").value,
+        notes: document.getElementById("otherNotes").value,
+        lat: mapLat.value || null,
+        lng: mapLng.value || null,
+        // Use persistent username from petpaths_currentUser if available
+        user: (() => {
+          try {
+            const u = JSON.parse(localStorage.getItem("petpaths_currentUser"));
+            return u && u.username ? u.username : "Anonymous";
+          } catch { return "Anonymous"; }
+        })(),
+        timestamp: Date.now()
+      };
+      await push(statusRef, data);
+      walkModal.classList.add("hidden");
+      e.target.reset();
+      if (drawnItems) drawnItems.clearLayers();
+    });
+
+    document.getElementById("applyFilter").addEventListener("click", () => {
+      currentFilter = document.querySelector('input[name="filter"]:checked').value;
+      filterModal.classList.add("hidden");
+      renderStatuses();
+    });
+  </script>
+</body>
+</html>
