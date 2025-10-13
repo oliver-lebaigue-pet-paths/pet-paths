@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verifying - Pet Paths</title>
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playwrite+US+Modern:wght@100..400&display=swap" rel="stylesheet">
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <style>
+    body {
+      background: #f3f3f3;
+      color: #222;
+      font-family: "Playwrite US Modern", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+    }
+    p {
+      max-width: 400px;
+      line-height: 1.4;
+      margin-bottom: 20px;
+    }
+    .cf-turnstile {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+    <h1>🐾 Verifying you’re human...</h1>
+    <p>Pet Paths uses this check to keep our community safe. It only takes a moment!</p>
+
+    <form id="verifyForm" action="#" method="POST">
+    <div class="cf-turnstile" 
+        data-sitekey="0x4AAAAAAB6Y8Yz_2JOABdS6" 
+        data-callback="turnstileSuccess"></div>
+    </form>
+
+    <script>
+        function turnstileSuccess(token) {
+            // token is the cf-turnstile-response value
+            localStorage.setItem("petpaths_verified", "true");
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>
