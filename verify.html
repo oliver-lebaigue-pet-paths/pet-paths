@@ -48,7 +48,7 @@
     <script>
         function turnstileSuccess(token) {
             // token is the cf-turnstile-response value
-            localStorage.setItem("petpaths_verified", "true");
+           SessionStorage.setItem("petpaths_verified", "true");
             window.location.href = "index.html";
         }
     </script>
