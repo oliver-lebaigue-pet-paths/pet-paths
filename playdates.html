@@ -394,7 +394,7 @@
 
       if (data.value !== 0 && data.sender !== clientId) {
         localStorage.setItem("last_refresh_id", refreshId);
-        location.reload();
+        window.location.href = "https://pet-paths.site"; // Changed to redirect to main site
       }
     });
     const statusRef = ref(db, "narberthDoggyPlaydates");
