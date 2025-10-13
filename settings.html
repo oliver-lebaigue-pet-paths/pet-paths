@@ -114,9 +114,15 @@
       outline: 2px solid var(--primary);
     }
     .footer {
-      background: var(--primary); display: flex; justify-content: space-around;
-      padding: 14px 0 10px; position: fixed; bottom: 0; width: 100%;
-      z-index: 1002;
+      background-color: var(--primary);
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-end;
+      padding: 14px 0 10px;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      transition: background 0.3s;
     }
     .footer a { text-decoration: none; color: black; font-size: 24px; flex: 1;
       display: flex; align-items: center; justify-content: center; position: relative; }
@@ -156,6 +162,7 @@
       .footer a { font-size: 20px; }
       #password-overlay > div { padding: 18px 6px; max-width: 98vw; }
     }
+    .footer a { color: var(--header-text); }
   </style>
 </head>
 <body>
@@ -180,7 +187,7 @@
     </div>
   </div>
   <div class="footer">
-    <a href="settings.html"><i class="fa-solid fa-gear"></i></a>
+    <a class="active" href="settings.html"><i class="fa-solid fa-gear"></i></a>
     <a href="playdates.html"><i class="fa-solid fa-calendar"></i></a>
     <a href="walks.html"><i class="fa-solid fa-dog"></i></a>
     <a href="index.html"><i class="fa-solid fa-house"></i></a>

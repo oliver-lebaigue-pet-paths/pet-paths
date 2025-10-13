@@ -256,7 +256,7 @@
   </style>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCMuOymY5KniYJgg51vkhcYWxXeyXAyFk0",
@@ -268,32 +268,55 @@
       appId: "1:5202022310:web:55991fbd2be58294bfc967",
       measurementId: "G-SW8L37HRVV"
     };
+
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const adminRef = ref(db, "admin");
+
+    // unique ID per admin session (so your browser won’t refresh itself)
+    const adminId = "admin_" + Math.random().toString(36).slice(2);
 
     // In Development Mode toggle
     const devSwitch = () => document.getElementById("devSwitch");
     const devStatus = document.getElementById("devStatus");
+
     onValue(ref(db, "admin/inDevelopment"), snap => {
       const val = !!snap.val();
       devSwitch().checked = val;
       devStatus.textContent = val ? "ON" : "OFF";
     });
-    devSwitch().addEventListener("change", async e => {
-      await set(ref(db, "admin/inDevelopment"), devSwitch().checked);
-      devStatus.textContent = devSwitch().checked ? "ON" : "OFF";
+
+    devSwitch().addEventListener("change", async () => {
+      const newVal = devSwitch().checked;
+      await set(ref(db, "admin/inDevelopment"), newVal);
+
+      // Trigger refresh for all clients except this admin (ON or OFF)
+      const refreshData = {
+        value: Date.now(),
+        sender: adminId
+      };
+      await set(ref(db, "admin/refresh"), refreshData);
+
+      devStatus.textContent = newVal ? "ON" : "OFF";
+
+      // reset refresh value soon after
+      setTimeout(async () => {
+        await set(ref(db, "admin/refresh"), { value: 0, sender: "" });
+      }, 1200);
     });
 
-    // All Client Refresh
+    // Manual refresh button
     const refreshBtn = document.getElementById("refreshBtn");
     const refreshStatus = document.getElementById("refreshStatus");
+
     refreshBtn.addEventListener("click", async () => {
-      const newVal = Date.now();
-      await set(ref(db, "admin/refresh"), newVal);
+      const refreshData = {
+        value: Date.now(),
+        sender: adminId
+      };
+      await set(ref(db, "admin/refresh"), refreshData);
       refreshStatus.textContent = "Triggered!";
       setTimeout(async () => {
-        await set(ref(db, "admin/refresh"), 0);
+        await set(ref(db, "admin/refresh"), { value: 0, sender: "" });
         refreshStatus.textContent = "";
       }, 1200);
     });
