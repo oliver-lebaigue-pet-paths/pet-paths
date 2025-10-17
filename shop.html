@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Shop - Pet Paths</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        @media (max-width: 600px) {
+            html, body {
+                width: 100vw;
+                overflow-x: hidden !important;
+                margin: 0;
+                padding: 0;
+            }
+            .profile-card {
+                padding: 14px 6px 12px 6px;
+                width: 100%;
+                max-width: 100%;
+                border-radius: 0;
+                box-sizing: border-box;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .profile-avatar {
+                margin-bottom: 12px;
+            }
+            .content {
+                padding: 14px 0 80px 0;
+                width: 100%;
+                max-width: 100%;
+                min-height: calc(100vh - 64px - 60px);
+                box-sizing: border-box;
+                margin: 0;
+            }
+            .header {
+                font-size: 1.05rem;
+                padding: 10px;
+                width: 100vw;
+                box-sizing: border-box;
+            }
+            .footer {
+                left: 0;
+                bottom: 0;
+                width: 100vw;
+                position: fixed;
+                box-sizing: border-box;
+            }
+            .footer a { font-size: 20px; }
+            #addProductModal {
+                position: fixed;
+                width: 100vw;
+                height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+                opacity: 1;
+                transition: opacity 0.3s ease;
+            }
+            #addProductModal.hidden {
+                display: none !important;
+                opacity: 0;
+            }
+            #addProductModal .modal-content {
+                max-width: 500px;
+                width: 90vw;
+                background: white;
+                max-height: 85vh;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                border-radius: 20px;
+                padding: 28px 30px 22px 30px;
+                gap: 1.5em;
+                position: relative;
+                box-sizing: border-box;
+                margin: auto;
+            }
+            .modal-content {
+                max-width: 98vw;
+                width: 98vw;
+                min-width: 0;
+                padding: 18px 6vw 16px 6vw;
+                border-radius: 12px;
+                font-size: 1rem;
+            }
+            .modal-content h3 {
+                font-size: 1.15rem;
+            }
+            .modal-content label,
+            .modal-content input[type="text"],
+            .modal-content input[type="password"],
+            .modal-content button {
+                font-size: 1rem;
+            }
+            .close {
+                top: 8px;
+                right: 12px;
+                font-size: 1.5rem;
+            }
+            .product-card {
+                width: 100%;
+                max-width: 100%;
+                border-radius: 0;
+                padding: 14px 6px;
+                box-sizing: border-box;
+            }
+        }
+        :root {
+            --primary: #4a4fcf;
+            --primary-dark: #3a3fb0;
+            --bg: #f3f3f3;
+            --text: #222;
+            --btn-text: #fff;
+            --header-bg: #4a4fcf;
+            --header-text: #fff;
+        }
+        #addProductModal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90vw;
+            max-width: 500px;
+            max-height: 85vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        #addProductModal.hidden {
+            display: none !important;
+            opacity: 0;
+        }
+
+        #addProductModal .modal-content {
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            padding: 28px 30px 22px 30px;
+            box-sizing: border-box;
+            max-height: 85vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5em;
+            position: relative;
+        }
+        [data-theme="dark"] {
+            --primary: #222b45;
+            --primary-dark: #151a30;
+            --bg: #181a20;
+            --text: #f3f3f3;
+            --btn-text: #fff;
+            --header-bg: #222b45;
+            --header-text: #fff;
+        }
+        [data-theme="forest"] {
+            --primary: #388e3c;
+            --primary-dark: #256029;
+            --bg: #e8f5e9;
+            --text: #1b3a1b;
+            --btn-text: #fff;
+            --header-bg: #388e3c;
+            --header-text: #fff;
+        }
+        [data-theme="ocean"] {
+            --primary: #1976d2;
+            --primary-dark: #0d47a1;
+            --bg: #e3f2fd;
+            --text: #0d223a;
+            --btn-text: #fff;
+            --header-bg: #1976d2;
+            --header-text: #fff;
+        }
+        [data-theme="rose"] {
+            --primary: #d81b60;
+            --primary-dark: #880e4f;
+            --bg: #fff1f6;
+            --text: #3a1b2f;
+            --btn-text: #fff;
+            --header-bg: #d81b60;
+            --header-text: #fff;
+        }
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: var(--header-bg);
+            color: var(--header-text);
+            font-size: 1.2rem;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            transition: background 0.3s, color 0.3s;
+        }
+        .header .icons {
+            display: flex;
+            gap: 12px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            align-items: center;
+        }
+        .header #signedInUser {
+            font-weight: 500;
+            font-size: 1rem;
+            color: #3a6ea5;
+            user-select: none;
+        }
+        .content {
+            flex: 1 0 auto;
+            padding: 20px 20px 80px 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .profile-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 3px 12px rgba(60, 60, 60, 0.08);
+            border: 1.5px solid #e0e0de;
+            margin-bottom: 18px;
+            padding: 18px 20px 14px 20px;
+            display: flex;
+            gap: 1.5em;
+            align-items: flex-start;
+            transition: box-shadow 0.2s ease-in-out;
+        }
+        .profile-card:hover {
+            box-shadow: 0 8px 25px rgba(60, 60, 60, 0.12);
+        }
+        .profile-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #e0e0de;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.8em;
+            color: #3a6ea5;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .profile-info {
+            flex: 1;
+        }
+        .profile-name {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #3a6ea5;
+            margin-bottom: 6px;
+        }
+        .profile-details-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2em;
+            font-size: 1em;
+            margin: 8px 0;
+            color: #555;
+        }
+        .profile-notes {
+            background: #f8f8fa;
+            border-left: 4px solid #3a6ea5;
+            border-radius: 8px;
+            padding: 10px 16px;
+            margin-top: 10px;
+            font-size: 0.95em;
+            color: #444;
+            font-style: italic;
+        }
+        #loadingSpinner,
+        #emptyState {
+            text-align: center;
+            padding: 24px;
+            font-size: 1.1rem;
+            color: #777;
+        }
+        .footer {
+            background: var(--primary);
+            display: flex;
+            justify-content: space-around;
+            padding: 14px 0 10px;
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            z-index: 1002;
+            box-shadow: 0 -3px 8px rgba(0, 0, 0, 0.15);
+            transition: background 0.3s;
+        }
+        .footer a {
+            text-decoration: none;
+            color: black;
+            font-size: 24px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: color 0.2s ease;
+        }
+        .footer a.active::before {
+            content: "";
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            border-radius: 50%;
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1;
+        }
+        .footer a.active i {
+            font-size: 30px;
+            transform: translateY(-5px);
+            z-index: 2;
+        }
+        .footer a:hover {
+            color: #2c3abf;
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+        .hidden {
+            display: none !important;
+            opacity: 0;
+        }
+        .modal-content {
+            max-width: 500px;
+            width: 90vw;
+            background: white;
+            max-height: 85vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            border-radius: 20px;
+            box-shadow: 0 8px 28px rgba(60, 60, 60, 0.25);
+            padding: 28px 30px 22px 30px;
+            gap: 1.5em;
+            position: relative;
+            box-sizing: border-box;
+        }
+        .modal-content h3 {
+            margin: 0 0 20px;
+            color: #3a6ea5;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            user-select: none;
+        }
+        .modal-content label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #222;
+            font-size: 1rem;
+        }
+        .modal-content input[type="text"],
+        .modal-content input[type="password"],
+        .modal-content input[type="number"] {
+            width: 95%;
+            padding: 10px 14px;
+            border: 1.8px solid #d1d1d1;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+            outline-offset: 2px;
+        }
+        .modal-content input[type="text"]:focus,
+        .modal-content input[type="password"]:focus,
+        .modal-content input[type="number"]:focus {
+            border-color: #4a4fcf;
+            outline: none;
+        }
+        .modal-content button {
+            margin-top: 14px;
+            background: #4a4fcf;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            padding: 12px 0;
+            cursor: pointer;
+            transition: background-color 0.25s ease;
+            font-weight: 700;
+            user-select: none;
+        }
+        .modal-content button:hover {
+            background: #3a3ecf;
+        }
+        .close {
+            position: absolute;
+            top: 14px;
+            right: 20px;
+            font-size: 2rem;
+            color: #666;
+            cursor: pointer;
+            user-select: none;
+            transition: color 0.25s ease;
+        }
+        .close:hover {
+            color: #4a4fcf;
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .product-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 3px 12px rgba(60, 60, 60, 0.08);
+            border: 1.5px solid #e0e0de;
+            padding: 18px;
+            text-align: center;
+            transition: box-shadow 0.2s ease-in-out;
+        }
+        .product-card:hover {
+            box-shadow: 0 8px 25px rgba(60, 60, 60, 0.12);
+        }
+        .product-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .product-name {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #3a6ea5;
+            margin: 10px 0;
+        }
+        .product-price {
+            font-size: 1.1em;
+            color: #4a4fcf;
+            margin: 5px 0;
+        }
+        .product-description {
+            font-size: 0.95em;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        .add-to-cart-btn {
+            background: #4a4fcf;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.25s ease;
+        }
+        .add-to-cart-btn:hover {
+            background: #3a3ecf;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        // Redirect unverified users to the verification page
+        if (!localStorage.getItem("petpaths_verified")) { //REMINDER
+            // window.location.href = "verify.html";
+        }
+    </script>
+    <script>
+        // Theme loader
+        (function() {
+            const theme = localStorage.getItem('petpaths_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    <div class="header">
+        <span>Shop</span>
+        <div class="icons">
+            <button id="adminAddProductBtn" style="background:#3a6ea5; color:white; border:none; border-radius:8px; padding:6px 12px; margin-left:10px; cursor:pointer;">Admin Add Product</button>
+            <a href="cart.html" id="cartIcon" style="margin-left:10px; position:relative;">
+                <i class="fa-solid fa-shopping-cart"></i>
+                <span id="cartCount" style="position:absolute; top:-10px; right:-10px; background:red; color:white; border-radius:50%; padding:2px 6px; font-size:0.8rem;">0</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="content">
+        <div id="loadingSpinner">Loading products...</div>
+        <div id="productGrid" style="display:none;"></div>
+        <div id="emptyState" style="display:none; text-align:center; padding:24px; color:#777;">No products available.</div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div id="addProductModal" class="hidden">
+        <div class="modal-content">
+            <span class="close" id="closeAddProductModal">&times;</span>
+            <h3 id="addProductTitle">Admin: Add New Product</h3>
+            <div id="passwordPrompt">
+            <label for="adminPassword">Enter Admin Password:</label>
+            <input type="password" id="adminPassword" placeholder="Password" required />
+            <button id="verifyPasswordBtn">Verify</button>
+            <p id="passwordError" style="color:red; display:none;">Incorrect password.</p>
+            </div>
+            <div id="addProductFormContainer" style="display:none;">
+            <form id="addProductForm">
+                <label for="productName">Product Name:</label>
+                <input type="text" id="productName" required />
+                <label for="productImageURL">Image URL:</label>
+                <input type="text" id="productImageURL" placeholder="https://..." required />
+                <label for="productDescription">Description:</label>
+                <input type="text" id="productDescription" required />
+                <label for="productPrice">Price:</label>
+                <input type="number" id="productPrice" step="0.01" required />
+                <button type="submit">Add Product</button>
+            </form>
+        </div>
+    </div>
+    </div>
+
+    <div class="footer">
+        <a href="settings.html" aria-label="settings"><i class="fa-solid fa-gear"></i></a>
+        <a href="playdates.html" aria-label="Playdates"><i class="fa-solid fa-calendar"></i></a>
+        <a href="walks.html" aria-label="Walks"><i class="fa-solid fa-dog"></i></a>
+        <a href="index.html" aria-label="Home"><i class="fa-solid fa-house"></i></a>
+        <a href="profiles.html" aria-label="Profiles"><i class="fa-solid fa-user"></i></a>
+        <a href="feedback.html"><i class="fa-solid fa-clipboard-list"></i></a>
+        <a href="admin.html"><i class="fa-solid fa-user-shield"></i></a>
+        <a class="active" href="shop.html" aria-label="Shop"><i class="fa-solid fa-shopping-cart"></i></a>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, get, push, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCMuOymY5KniYJgg51vkhcYWxXeyXAyFk0",
+            authDomain: "pet-paths.firebaseapp.com",
+            databaseURL: "https://pet-paths-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "pet-paths",
+            storageBucket: "pet-paths.firebasestorage.app",
+            messagingSenderId: "5202022310",
+            appId: "1:5202022310:web:55991fbd2be58294bfc967",
+            measurementId: "G-SW8L37HRVV",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const productsRef = ref(db, "products");
+
+        let products = {};
+
+        const adminAddProductBtn = document.getElementById("adminAddProductBtn");
+        const addProductModal = document.getElementById("addProductModal");
+        const closeAddProductModal = document.getElementById("closeAddProductModal");
+        const verifyPasswordBtn = document.getElementById("verifyPasswordBtn");
+        const adminPasswordInput = document.getElementById("adminPassword");
+        const passwordError = document.getElementById("passwordError");
+        const addProductFormContainer = document.getElementById("addProductFormContainer");
+        const addProductForm = document.getElementById("addProductForm");
+
+        const ADMIN_PASSWORD = "Onniecat123!";
+
+        adminAddProductBtn.addEventListener("click", () => {
+            addProductModal.classList.remove("hidden");
+            document.getElementById("passwordPrompt").style.display = "block";
+            addProductFormContainer.style.display = "none";
+        });
+
+        verifyPasswordBtn.addEventListener("click", () => {
+            const enteredPassword = adminPasswordInput.value;
+            if (enteredPassword === ADMIN_PASSWORD) {
+                document.getElementById("passwordPrompt").style.display = "none";
+                addProductFormContainer.style.display = "block";
+                passwordError.style.display = "none";
+            } else {
+                passwordError.style.display = "block";
+            }
+        });
+
+        closeAddProductModal.addEventListener("click", () => {
+            addProductModal.classList.add("hidden");
+            addProductForm.reset();
+            document.getElementById("passwordPrompt").style.display = "block";
+            addProductFormContainer.style.display = "none";
+            passwordError.style.display = "none";
+        });
+
+        addProductForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const newProduct = {
+                name: document.getElementById("productName").value,
+                imageURL: document.getElementById("productImageURL").value,
+                description: document.getElementById("productDescription").value,
+                price: parseFloat(document.getElementById("productPrice").value)
+            };
+            const newProductRef = push(productsRef);
+            set(newProductRef, newProduct)
+                .then(() => {
+                    alert("Product added successfully!");
+                    addProductModal.classList.add("hidden");
+                    loadProducts();
+                })
+                .catch(error => {
+                    alert("Failed to add product: " + error.message);
+                });
+            addProductForm.reset();
+        });
+
+        addProductModal.addEventListener("click", (e) => {
+            if (e.target === addProductModal) {
+                closeAddProductModal.click();
+            }
+        });
+
+        function renderProducts(productsData) {
+            products = productsData;  // Store products globally
+            const productGrid = document.getElementById("productGrid");
+            productGrid.innerHTML = "";
+            if (Object.keys(productsData).length === 0) {
+                document.getElementById("emptyState").style.display = "block";
+                return;
+            }
+            document.getElementById("emptyState").style.display = "none";
+            for (const key in productsData) {
+                const product = productsData[key];
+                const card = document.createElement("div");
+                card.className = "product-card";
+                card.innerHTML = `
+                    <img src="${product.imageURL}" alt="${product.name}" class="product-image">
+                    <h3 class="product-name">${product.name}</h3>
+                    <p class="product-description">${product.description}</p>
+                    <p class="product-price">$${product.price.toFixed(2)}</p>
+                    <button class="add-to-cart-btn" onclick="addToCart('${key}')">Add to Cart</button>
+                `;
+                productGrid.appendChild(card);
+            }
+            productGrid.style.display = "grid";
+        }
+
+        function loadProducts() {
+            const loadingSpinner = document.getElementById("loadingSpinner");
+            loadingSpinner.style.display = "block";
+            get(productsRef)
+                .then(snapshot => {
+                    if (snapshot.exists()) {
+                        const fetchedProducts = snapshot.val();
+                        renderProducts(fetchedProducts);
+                    } else {
+                        document.getElementById("emptyState").style.display = "block";
+                    }
+                })
+                .catch(error => {
+                    document.getElementById("emptyState").textContent = "Failed to load products.";
+                    document.getElementById("emptyState").style.display = "block";
+                })
+                .finally(() => {
+                    loadingSpinner.style.display = "none";
+                    updateCartCounter();  // Update cart counter after loading products
+                });
+        }
+
+        function addToCart(productKey) {
+            if (!products[productKey]) {
+                alert("Product not found. Please try again.");
+                return;
+            }
+            
+            const product = products[productKey];
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];  // Get cart from localStorage
+            
+            const existingItem = cart.find(item => item.productKey === productKey);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;  // Increment quantity
+            } else {
+                cart.push({
+                    productKey: productKey,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1  // Start with 1
+                });
+            }
+            
+            localStorage.setItem('cart', JSON.stringify(cart));  // Save updated cart
+            alert("Item added to cart!");
+            updateCartCounter();  // Update the UI counter
+        }
+
+        function updateCartCounter() {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);  // Sum quantities
+            document.getElementById('cartCount').textContent = totalItems;
+        }
+
+        loadProducts();
+    </script>
+</body>
+</html>

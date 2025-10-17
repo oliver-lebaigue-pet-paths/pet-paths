@@ -441,13 +441,19 @@
 	</style>
 </head>
 <body>
-		<script>
-			// Theme loader for all pages
-			(function() {
-				const theme = localStorage.getItem('petpaths_theme') || 'light';
-				document.documentElement.setAttribute('data-theme', theme);
-			})();
-		</script>
+	<script>
+		// Redirect unverified users to the verification page
+		if (!localStorage.getItem("petpaths_verified")) {
+			window.location.href = "verify.html";
+		}
+	</script>
+	<script>
+		// Theme loader for all pages
+		(function() {
+			const theme = localStorage.getItem('petpaths_theme') || 'light';
+			document.documentElement.setAttribute('data-theme', theme);
+		})();
+	</script>
 		<div class="header">
 		<span>Profiles</span>
 		<div class="icons">
@@ -479,31 +485,31 @@
 					<button id="editProfileBtn" class="auth-footer-btn" aria-label="Edit Profile" style="background:#3a6ea5;">Edit My Profile</button>
 					<button id="signOutBtn" class="auth-footer-btn signout-btn" aria-label="Sign out">Sign Out</button>
 				</div>
-	<!-- Edit Profile Modal -->
-	<div id="editProfileModal" class="modal hidden" aria-modal="true" role="dialog" aria-labelledby="editProfileTitle">
-		<div class="modal-content" role="document">
-			<span class="close" id="closeEditProfileModal" aria-label="Close modal">&times;</span>
-			<h3 id="editProfileTitle">Edit My Profile</h3>
-			<form id="editProfileForm">
-				<label for="editDisplayName">Display Name:</label>
-				<input type="text" id="editDisplayName" name="editDisplayName" required />
+				<!-- Edit Profile Modal -->
+				<div id="editProfileModal" class="modal hidden" aria-modal="true" role="dialog" aria-labelledby="editProfileTitle">
+					<div class="modal-content" role="document">
+						<span class="close" id="closeEditProfileModal" aria-label="Close modal">&times;</span>
+						<h3 id="editProfileTitle">Edit My Profile</h3>
+						<form id="editProfileForm">
+							<label for="editDisplayName">Display Name:</label>
+							<input type="text" id="editDisplayName" name="editDisplayName" required />
 
-				<label for="editPetName">Pet Name:</label>
-				<input type="text" id="editPetName" name="editPetName" />
+							<label for="editPetName">Pet Name:</label>
+							<input type="text" id="editPetName" name="editPetName" />
 
-				<label for="editLocation">Location:</label>
-				<input type="text" id="editLocation" name="editLocation" />
+							<label for="editLocation">Location:</label>
+							<input type="text" id="editLocation" name="editLocation" />
 
-				<label for="editNotes">Notes:</label>
-				<input type="text" id="editNotes" name="editNotes" />
+							<label for="editNotes">Notes:</label>
+							<input type="text" id="editNotes" name="editNotes" />
 
-				<label for="editPhotoURL">Photo URL:</label>
-				<input type="text" id="editPhotoURL" name="editPhotoURL" placeholder="https://..." />
+							<label for="editPhotoURL">Photo URL:</label>
+							<input type="text" id="editPhotoURL" name="editPhotoURL" placeholder="https://..." />
 
-				<button type="submit">Save Changes</button>
-			</form>
-		</div>
-	</div>
+							<button type="submit">Save Changes</button>
+						</form>
+					</div>
+				</div>
 				<!-- Sign In View -->
 				<div id="signInView" style="display:none; flex-direction: column; gap: 1em;">
 					<h3 id="authTitle">Sign In</h3>

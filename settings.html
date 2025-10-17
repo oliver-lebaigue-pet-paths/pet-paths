@@ -166,6 +166,12 @@
   </style>
 </head>
 <body>
+  <script>
+    // Redirect unverified users to the verification page
+    if (!localStorage.getItem("petpaths_verified")) {
+      window.location.href = "verify.html";
+    }
+  </script>
   <div class="header">
     <span>Settings</span>
     <i class="fa-solid fa-gear"></i>
