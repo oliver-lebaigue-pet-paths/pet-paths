@@ -46,34 +46,11 @@
     </form>
 
     <script>
-  const host = window.location.hostname;
-
-  // Production domain (real challenge only here)
-  const realDomain = "pet-paths.site";
-
-  // If not the real site, skip Turnstile entirely
-  if (host !== realDomain) {
-    console.log("Test or local environment detected — skipping verification.");
-    localStorage.setItem("petpaths_verified", "true");
-    window.location.href = "index.html";
-  } else {
-    // Only load Turnstile script and observer on the real site
-    const script = document.createElement("script");
-    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
-    script.async = true;
-    script.defer = true;
-    document.head.appendChild(script);
-
-    const form = document.getElementById("verifyForm");
-    const observer = new MutationObserver(() => {
-      const input = form.querySelector('input[name="cf-turnstile-response"]');
-      if (input && input.value.length > 0) {
-        localStorage.setItem("petpaths_verified", "true");
-        window.location.href = "index.html";
-      }
-    });
-    observer.observe(form, { childList: true, subtree: true });
-  }
-</script>
+      function turnstileSuccess(token) {
+            // token is the cf-turnstile-response value
+           localStorage.setItem("petpaths_verified", "true");
+            window.location.href = "index.html";
+        }
+    </script>
 </body>
 </html>
