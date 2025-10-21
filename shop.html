@@ -72,7 +72,7 @@
         box-sizing: border-box;
       }
       .footer a { font-size: 20px; }
-      #addProductModal {
+      #addProductModal, #cartModal {
         position: fixed;
         width: 100vw;
         height: 100vh;
@@ -83,11 +83,11 @@
         opacity: 1;
         transition: opacity 0.3s ease;
       }
-      #addProductModal.hidden {
+      #addProductModal.hidden, #cartModal.hidden {
         display: none !important;
         opacity: 0;
       }
-      #addProductModal .modal-content {
+      #addProductModal .modal-content, #cartModal .modal-content {
         max-width: 500px;
         width: 90vw;
         background: white;
@@ -329,7 +329,7 @@
       background: #3a3ecf;
     }
 
-    #addProductModal {
+    #addProductModal, #cartModal {
       position: fixed;
       top: 50%;
       left: 50%;
@@ -344,11 +344,11 @@
       opacity: 1;
       transition: opacity 0.3s ease;
     }
-    #addProductModal.hidden {
+    #addProductModal.hidden, #cartModal.hidden {
       display: none !important;
       opacity: 0;
     }
-    #addProductModal .modal-content {
+    #addProductModal .modal-content, #cartModal .modal-content {
       width: 100%;
       background: white;
       border-radius: 20px;
@@ -423,6 +423,84 @@
       color: #4a4fcf;
     }
 
+    /* Cart Modal Specific Styles */
+    .cart-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .cart-item img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    .cart-item-details {
+      flex: 1;
+    }
+    .cart-item-name {
+      font-weight: 600;
+      color: #3a6ea5;
+    }
+    .cart-item-price {
+      color: #4a4fcf;
+      font-size: 0.9em;
+    }
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .quantity-controls button {
+      background: #ddd;
+      border: none;
+      border-radius: 4px;
+      width: 25px;
+      height: 25px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .quantity-controls button:hover {
+      background: #ccc;
+    }
+    .quantity-controls span {
+      min-width: 20px;
+      text-align: center;
+    }
+    .remove-btn {
+      background: #ff4d4d;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .remove-btn:hover {
+      background: #cc0000;
+    }
+    .cart-total {
+      font-weight: 700;
+      font-size: 1.2em;
+      color: #4a4fcf;
+      text-align: center;
+      margin-top: 20px;
+    }
+    .cart-empty {
+      text-align: center;
+      color: #777;
+      font-style: italic;
+    }
+    body.modal-open {
+      filter: blur(5px);
+      pointer-events: none; /* Optional: Prevents interaction with blurred content */
+    }
+    body.modal-open .header,
+    body.modal-open .footer {
+      filter: none; /* Ensure header/footer aren't blurred if desired */
+    }
   </style>
 </head>
 <body>
@@ -447,10 +525,10 @@
     <span>Shop</span>
     <div class="icons">
       <button id="adminAddProductBtn" style="background:#3a6ea5; color:white; border:none; border-radius:8px; padding:6px 12px; margin-left:10px; cursor:pointer;">Admin Add Product</button>
-      <a href="cart.html" id="cartIcon" style="margin-left:10px; position:relative;">
+      <button id="cartIcon" style="background:none; border:none; margin-left:10px; position:relative; cursor:pointer;">
         <i class="fa-solid fa-shopping-cart"></i>
         <span id="cartCount" style="position:absolute; top:-10px; right:-10px; background:red; color:white; border-radius:50%; padding:2px 6px; font-size:0.8rem;">0</span>
-      </a>
+      </button>
     </div>
   </div>
 
@@ -477,13 +555,23 @@
           <input type="text" id="productName" required />
           <label for="productImageURL">Image URL:</label>
           <input type="text" id="productImageURL" placeholder="https://..." required />
-          <label for="productDescription">Description:</label>
-          <input type="text" id="productDescription" required />
           <label for="productPrice">Price:</label>
           <input type="number" id="productPrice" step="0.01" required />
           <button type="submit">Add Product</button>
         </form>
       </div>
+    </div>
+  </div>
+
+  <!-- Cart Modal -->
+  <div id="cartModal" class="hidden">
+    <div class="modal-content">
+      <span class="close" id="closeCartModal">&times;</span>
+      <h3>Your Cart</h3>
+      <div id="cartItems"></div>
+      <div id="cartEmpty" class="cart-empty" style="display:none;">Your cart is empty.</div>
+      <div class="cart-total" id="cartTotal">Total: £0.00</div>
+      <button id="checkoutBtn">Proceed to Checkout</button>
     </div>
   </div>
 
@@ -529,6 +617,15 @@
     const addProductForm = document.getElementById("addProductForm");
     const toast = document.getElementById("toast");
 
+    // Cart modal elements
+    const cartIcon = document.getElementById("cartIcon");
+    const cartModal = document.getElementById("cartModal");
+    const closeCartModal = document.getElementById("closeCartModal");
+    const cartItems = document.getElementById("cartItems");
+    const cartEmpty = document.getElementById("cartEmpty");
+    const cartTotal = document.getElementById("cartTotal");
+    const checkoutBtn = document.getElementById("checkoutBtn");
+
     const ADMIN_PASSWORD = "Onniecat123!";
 
     function getCart() {
@@ -539,6 +636,10 @@
       }
     }
 
+    function saveCart(cart) {
+      localStorage.setItem('cart', JSON.stringify(cart));
+    }
+
     function showToast(message) {
       toast.textContent = message;
       toast.style.display = "block";
@@ -547,6 +648,7 @@
       }, 2000);
     }
 
+    // Admin add product modal logic
     adminAddProductBtn.addEventListener("click", () => {
       addProductModal.classList.remove("hidden");
       document.getElementById("passwordPrompt").style.display = "block";
@@ -608,6 +710,104 @@
         });
     });
 
+    // Cart modal logic
+    cartIcon.addEventListener("click", () => {
+      renderCart();
+      cartModal.classList.remove("hidden");
+    });
+
+    closeCartModal.addEventListener("click", () => {
+      cartModal.classList.add("hidden");
+    });
+
+    cartModal.addEventListener("click", (e) => {
+      if (e.target === cartModal) {
+        closeCartModal.click();
+      }
+    });
+
+    function renderCart() {
+      const cart = getCart();
+      cartItems.innerHTML = "";
+
+      if (cart.length === 0) {
+        cartEmpty.style.display = "block";
+        cartTotal.style.display = "none";
+        checkoutBtn.style.display = "none";
+        return;
+      }
+
+      cartEmpty.style.display = "none";
+      cartTotal.style.display = "block";
+      checkoutBtn.style.display = "block";
+
+      let total = 0;
+
+      cart.forEach((item, index) => {
+        const product = products[item.key];
+        if (!product) return;
+        const itemTotal = product.price * item.quantity;
+        total += itemTotal;
+
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "cart-item";
+        itemDiv.innerHTML = `
+          <img src="${product.imageURL}" alt="${product.name}" />
+          <div class="cart-item-details">
+            <div class="cart-item-name">${product.name}</div>
+            <div class="cart-item-price">£${product.price.toFixed(2)} each</div>
+          </div>
+          <div class="quantity-controls">
+            <button class="decrease-btn" data-index="${index}">-</button>
+            <span>${item.quantity}</span>
+            <button class="increase-btn" data-index="${index}">+</button>
+          </div>
+          <button class="remove-btn" data-index="${index}">Remove</button>
+        `;
+        cartItems.appendChild(itemDiv);
+      });
+
+      cartTotal.textContent = `Total: £${total.toFixed(2)}`;
+
+      // Add event listeners for quantity controls
+      document.querySelectorAll(".decrease-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const index = parseInt(e.target.dataset.index);
+          if (cart[index].quantity > 1) {
+            cart[index].quantity--;
+            saveCart(cart);
+            renderCart();
+            updateCartCounter();
+          }
+        });
+      });
+
+      document.querySelectorAll(".increase-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const index = parseInt(e.target.dataset.index);
+          cart[index].quantity++;
+          saveCart(cart);
+          renderCart();
+          updateCartCounter();
+        });
+      });
+
+      document.querySelectorAll(".remove-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          const index = parseInt(e.target.dataset.index);
+          cart.splice(index, 1);
+          saveCart(cart);
+          renderCart();
+          updateCartCounter();
+        });
+      });
+    }
+
+    checkoutBtn.addEventListener("click", () => {
+      // For now, just show a toast. You can implement checkout logic here.
+      showToast("Checkout functionality not implemented yet.");
+    });
+
     function renderProducts(data) {
       products = data;
       const grid = document.getElementById("productGrid");
@@ -649,7 +849,7 @@
           } else {
             cart.push({ key, name: product.name, price: product.price, quantity: 1 });
           }
-          localStorage.setItem('cart', JSON.stringify(cart));
+          saveCart(cart);
           updateCartCounter();
           showToast(`${product.name} added to cart!`);
         });
@@ -688,7 +888,14 @@
       loadProducts();
       updateCartCounter();
     });
-
+    // Function to toggle modal blur
+    function toggleModalBlur(open) {
+      if (open) {
+        document.body.classList.add("modal-open");
+      } else {
+        document.body.classList.remove("modal-open");
+      }
+    }
   </script>
 
 </body>
