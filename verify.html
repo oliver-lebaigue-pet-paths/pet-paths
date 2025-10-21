@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playwrite+US+Modern:wght@100..400&display=swap" rel="stylesheet">
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <style>
     body {
       background: #f3f3f3;
@@ -36,21 +35,43 @@
   </style>
 </head>
 <body>
-    <h1>🐾 Verifying you’re human...</h1>
-    <p>Pet Paths uses this check to keep our community safe. It only takes a moment!</p>
+  <h1>🐾 Verifying you’re human...</h1>
+  <p>Pet Paths uses this check to keep our community safe. It only takes a moment!</p>
 
-    <form id="verifyForm" action="#" method="POST">
-    <div class="cf-turnstile" 
-        data-sitekey="0x4AAAAAAB6Y8Yz_2JOABdS6" 
-        data-callback="turnstileSuccess"></div>
-    </form>
+  <form id="verifyForm" action="#" method="POST">
+    <div id="turnstile-container"></div>
+  </form>
 
-    <script>
-        function turnstileSuccess(token) {
-            // token is the cf-turnstile-response value
-           localStorage.setItem("petpaths_verified", "true");
-            window.location.href = "index.html";
-        }
-    </script>
+  <script>
+    const isVerifyPage = window.location.href.includes("pet-paths.site/verify.html");
+
+    function finishVerification() {
+      localStorage.setItem("petpaths_verified", "true");
+      window.location.href = "index.html";
+    }
+
+    if (isVerifyPage) {
+      // Load Turnstile script dynamically
+      const script = document.createElement('script');
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+
+      // Insert the Turnstile widget container
+      const container = document.getElementById('turnstile-container');
+      container.className = "cf-turnstile";
+      container.setAttribute("data-sitekey", "0x4AAAAAAB6Y8Yz_2JOABdS6");
+      container.setAttribute("data-callback", "turnstileSuccess");
+
+      // Define callback globally
+      window.turnstileSuccess = function(token) {
+        finishVerification();
+      };
+    } else {
+      // Skip Turnstile, just mark as verified
+      finishVerification();
+    }
+  </script>
 </body>
 </html>
