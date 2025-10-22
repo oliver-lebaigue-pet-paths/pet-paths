@@ -572,6 +572,21 @@
       <div id="cartEmpty" class="cart-empty" style="display:none;">Your cart is empty.</div>
       <div class="cart-total" id="cartTotal">Total: £0.00</div>
       <button id="checkoutBtn">Proceed to Checkout</button>
+      <div id="payment-container" style="max-width: 400px; margin: 20px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px;">
+      <h2>Make a Payment</h2>
+      <form id="payment-form">
+        <label for="amount">Amount (in cents, e.g., 1000 for $10):</label>
+        <input type="number" id="amount" min="50" required style="width: 100%; padding: 8px; margin: 10px 0;" />
+        
+        <div id="card-element" style="margin: 10px 0;"></div>  <!-- Stripe card input -->
+        
+        <button id="submit" type="submit" disabled style="width: 100%; padding: 10px; background: #6772e5; color: white; border: none; border-radius: 4px;">Pay Now</button>
+      </form>
+      <div id="messages" style="margin-top: 10px;"></div>  <!-- Success/error messages -->
+    </div>
+
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="payment.js"></script>  <!-- Link to your JS file -->
     </div>
   </div>
 
