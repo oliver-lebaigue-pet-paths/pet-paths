@@ -39,15 +39,21 @@
   <p>Pet Paths uses this check to keep our community safe. It only takes a moment!</p>
 
   <form id="verifyForm" action="#" method="POST">
-    <div id="turnstile-container"></div>
+    <div
+      class="cf-turnstile"
+      data-sitekey="0x4AAAAAAB6Y8Yz_2JOABdS6"
+      data-callback="turnstileSuccess">
+    </div>
   </form>
 
-    <script>
-      function turnstileSuccess(token) {
-            // token is the cf-turnstile-response value
-           localStorage.setItem("petpaths_verified", "true");
-            window.location.href = "index.html";
-        }
-    </script>
+  <script>
+    function turnstileSuccess(token) {
+      localStorage.setItem("petpaths_verified", "true");
+      window.location.href = `${window.location.origin}/index.html`;
+    }
+  </script>
+
+  <!-- Cloudflare Turnstile script -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </body>
 </html>
