@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pet Net</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <script>
+        // Redirect unverified users to the verification page
+        if (!localStorage.getItem("petpaths_verified")) {
+            window.location.href = "verify.html";
+        }
+    </script>
+    <script>
+        // Theme loader for all pages
+        (function() {
+            const theme = localStorage.getItem('petpaths_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    <div class="header">
+        <div class="logo">Pet Net</div>
+        <div class="icons">
+            <i class="fa-solid fa-magnifying-glass" title="Search"></i>
+            <i class="fa-solid fa-heart" title="Notifications"></i>
+            <i class="fa-solid fa-user" id="authIcon" title="Profile"></i>
+            <i class="fa-solid fa-plus" id="createPostIcon" title="Create Post"></i>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="stories">
+            <!-- Placeholder stories; load dynamically in a real app -->
+            <div class="story"><img src="https://via.placeholder.com/60" alt="Story"></div>
+            <div class="story"><img src="https://via.placeholder.com/60" alt="Story"></div>
+            <div class="story"><img src="https://via.placeholder.com/60" alt="Story"></div>
+            <div class="story"><img src="https://via.placeholder.com/60" alt="Story"></div>
+        </div>
+        <div class="feed" id="feed"></div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal hidden" aria-modal="true" role="dialog" aria-labelledby="authTitle">
+        <div class="modal-content" role="document">
+            <span class="close" id="closeAuthModal" aria-label="Close modal">&times;</span>
+            <div id="authModalViews">
+                <!-- Signed In View -->
+                <div id="signedInView" style="display:none; flex-direction: column; align-items: center; gap: 1.4em;">
+                    <h3 id="authTitle">Signed in as <span id="currentUserName"></span></h3>
+                    <button id="editProfileBtn" class="auth-footer-btn" aria-label="Edit Profile" style="background:#3a6ea5;">Edit My Profile</button>
+                    <button id="signOutBtn" class="auth-footer-btn signout-btn" aria-label="Sign out">Sign Out</button>
+                </div>
+                <!-- Edit Profile Modal -->
+                <div id="editProfileModal" class="modal hidden" aria-modal="true" role="dialog" aria-labelledby="editProfileTitle">
+                    <div class="modal-content" role="document">
+                        <span class="close" id="closeEditProfileModal" aria-label="Close modal">&times;</span>
+                        <h3 id="editProfileTitle">Edit My Profile</h3>
+                        <form id="editProfileForm">
+                            <label for="editDisplayName">Display Name:</label>
+                            <input type="text" id="editDisplayName" name="editDisplayName" required />
+                            <label for="editPetName">Pet Name:</label>
+                            <input type="text" id="editPetName" name="editPetName" />
+                            <label for="editLocation">Location:</label>
+                            <input type="text" id="editLocation" name="editLocation" />
+                            <label for="editNotes">Notes:</label>
+                            <input type="text" id="editNotes" name="editNotes" />
+                            <label for="editPhotoURL">Photo URL:</label>
+                            <input type="text" id="editPhotoURL" name="editPhotoURL" placeholder="https://..." />
+                            <button type="submit">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+                <!-- Sign In View -->
+                <div id="signInView" style="display:none; flex-direction: column; gap: 1em;">
+                    <h3 id="authTitle">Sign In</h3>
+                    <form id="signInForm">
+                        <label for="signInUsername">Username:</label>
+                        <input type="text" id="signInUsername" placeholder="Username" autocomplete="username" required />
+                        <label for="signInPassword">Password:</label>
+                        <input type="password" id="signInPassword" placeholder="Password" autocomplete="current-password" required />
+                        <br>
+                        <p>Forogt your password?<a id="showChangePassword" style="padding-left: 10px;">Change password</a></p>
+                        <center>
+                            <button type="submit" class="auth-footer-btn" style="width: 150px;">Sign In</button>
+                        </center>
+                    </form>
+                    <p>Don't have an account? <a href="#" id="toSignUp">Sign up</a></p>
+                </div>
+                <!-- Sign Up View -->
+                <div id="signUpView" style="display:none; flex-direction: column; gap: 1em;">
+                    <h3 id="authTitle">Sign Up</h3>
+                    <form id="signUpForm">
+                        <label for="signUpUsername">Username:</label>
+                        <input type="text" id="signUpUsername" placeholder="Username" autocomplete="username" required />
+                        <label for="signUpPassword">Password:</label>
+                        <input type="password" id="signUpPassword" placeholder="Password" autocomplete="new-password" required />
+                        <button type="submit">Sign Up</button>
+                    </form>
+                    <p>Already have an account? <a href="#" id="toSignIn">Sign in</a></p>
+                </div>
+                <!-- Change Password View -->
+                <div id="changePasswordView" style="display:none; flex-direction: column; gap: 1em;">
+                    <h3 id="authTitle">Change Password</h3>
+                    <form id="changePasswordForm">
+                        <label for="changePasswordUsername">Username:</label>
+                        <input type="text" id="changePasswordUsername" placeholder="Username" required />
+                        <label for="newPassword">New Password:</label>
+                        <input type="password" id="newPassword" placeholder="New Password" required />
+                        <button type="submit">Change Password</button>
+                    </form>
+                    <p><a href="#" id="backToSignIn">Back to Sign In</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Post Modal -->
+    <div id="createPostModal" class="modal hidden post-modal" aria-modal="true" role="dialog" aria-labelledby="createPostTitle">
+        <div class="modal-content" role="document">
+            <span class="close" id="closeCreatePostModal" aria-label="Close modal">&times;</span>
+            <h3 id="createPostTitle">Create New Post</h3>
+            <form id="createPostForm" class="post-form">
+                <label for="postImageURL">Image URL:</label>
+                <input type="url" id="postImageURL" name="postImageURL" placeholder="https://..." required />
+                <label for="postCaption">Caption:</label>
+                <textarea id="postCaption" name="postCaption" placeholder="Write a caption..." required></textarea>
+                <button type="submit">Post</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer (unchanged) -->
+    <div class="footer">
+        <a href="\settings.html" aria-label="settings"><i class="fa-solid fa-gear"></i></a>
+        <a href="\playdates.html" aria-label="Playdates"><i class="fa-solid fa-calendar"></i></a>
+        <a href="\walks.html" aria-label="Walks"><i class="fa-solid fa-dog"></i></a>
+        <a href="\index.html" aria-label="Home"><i class="fa-solid fa-house"></i></a>
+        <a class="active" href="index.html" aria-label="Pet-net"><i class="fa-solid fa-user"></i></a>
+        <a href="\feedback.html"><i class="fa-solid fa-clipboard-list"></i></a>
+        <a href="\admin.html"><i class="fa-solid fa-user-shield"></i></a>
+    </div>
+
+    <script src="script.js" type="module"></script>
+</body>
+</html> 
