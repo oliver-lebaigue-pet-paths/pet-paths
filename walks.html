@@ -429,7 +429,7 @@
       const mapId = `map-${key}`;
       // Determine if delete button should be shown
       const currentUser = getCurrentUsername();
-      const canDelete = currentUser && (currentUser === "admin" || currentUser === data.user);
+      const canDelete = currentUser && (currentUser === "admin" || currentuser === "staff" || currentUser === data.user);
       div.innerHTML = `
         <div class="status-card-header">
           <span class="status-type ${statusText.replace(/\s+/g,'-').toLowerCase()}">

@@ -9,50 +9,50 @@
   <title>Pet Paths</title>
   <style>
     :root {
-		    	--primary: #4a4fcf;
-		  	--primary-dark: #3a3fb0;
-		  	--bg: #f3f3f3;
-		  	--text: #222;
-		  	--btn-text: #fff;
-		  	--header-bg: #4a4fcf;
-		  	--header-text: #fff;
-		  }
-      [data-theme="dark"] {
-        --primary: #222b45;
-        --primary-dark: #151a30;
-        --bg: #181a20;
-        --text: #f3f3f3;
-        --btn-text: #fff;
-        --header-bg: #222b45;
-        --header-text: #fff;
-      }
-			[data-theme="forest"] {
-				--primary: #388e3c;
-				--primary-dark: #256029;
-				--bg: #e8f5e9;
-				--text: #1b3a1b;
-				--btn-text: #fff;
-				--header-bg: #388e3c;
-				--header-text: #fff;
-			}
-			[data-theme="ocean"] {
-				--primary: #1976d2;
-				--primary-dark: #0d47a1;
-				--bg: #e3f2fd;
-				--text: #0d223a;
-				--btn-text: #fff;
-				--header-bg: #1976d2;
-				--header-text: #fff;
-			}
-			[data-theme="rose"] {
-				--primary: #d81b60;
-				--primary-dark: #880e4f;
-				--bg: #fff1f6;
-				--text: #3a1b2f;
-				--btn-text: #fff;
-				--header-bg: #d81b60;
-				--header-text: #fff;
-			}
+		--primary: #4a4fcf;
+	  	--primary-dark: #3a3fb0;
+	  	--bg: #f3f3f3;
+		--text: #222;
+	  	--btn-text: #fff;
+	  	--header-bg: #4a4fcf;
+		--header-text: #fff;
+	}
+    [data-theme="dark"] {
+    	--primary: #222b45;
+		--primary-dark: #151a30;
+    	--bg: #181a20;
+    	--text: #f3f3f3;
+    	--btn-text: #fff;
+		--header-bg: #222b45;
+    	--header-text: #fff;
+	}
+	[data-theme="forest"] {
+		--primary: #388e3c;
+		--primary-dark: #256029;
+		--bg: #e8f5e9;
+		--text: #1b3a1b;
+		--btn-text: #fff;
+		--header-bg: #388e3c;
+		--header-text: #fff;
+	}
+	[data-theme="ocean"] {
+		--primary: #1976d2;
+		--primary-dark: #0d47a1;
+		--bg: #e3f2fd;
+		--text: #0d223a;
+		--btn-text: #fff;
+		--header-bg: #1976d2;
+		--header-text: #fff;
+	}
+	[data-theme="rose"] {
+		--primary: #d81b60;
+		--primary-dark: #880e4f;
+		--bg: #fff1f6;
+		--text: #3a1b2f;
+		--btn-text: #fff;
+		--header-bg: #d81b60;
+		--header-text: #fff;
+	}
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -273,6 +273,16 @@
     .github-float:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(36,41,47,0.22); }
     .github-float:focus { outline: 3px solid rgba(36,41,47,0.18); outline-offset: 3px; }
     .github-float i { font-size: 22px; }
+
+	.name {
+		animation: slideIn 2s infinte;
+	}
+
+	@keyframes slideIn {
+		0% {transform: translateX(-50%);}
+		50% {transform: translateX(0%);}
+		100% {transform: translateX(50%);}
+	}
   </style>
 
   <!-- Font Awesome -->
