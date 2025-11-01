@@ -9,12 +9,6 @@
 </head>
 <body>
     <script>
-        // Redirect unverified users to the verification page
-        if (!localStorage.getItem("petpaths_verified")) {
-            window.location.href = "\verify.html";
-        }
-    </script>
-    <script>
         // Theme loader for all pages
         (function() {
             const theme = localStorage.getItem('petpaths_theme') || 'light';
