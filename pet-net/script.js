@@ -60,25 +60,30 @@ function createPostCard(postData, postKey) {
     const likeCount = postData.likes ? Object.keys(postData.likes).length : 0;
 
     div.innerHTML = `
-        <div class="post-header">
-            <div class="post-avatar">${avatarHtml}</div>
-            <div class="post-user">${username}</div>
-        </div>
-        <img class="post-image" src="${postData.imageURL}" alt="Post Image" />
-        <div class="post-actions">
-            <div class="post-actions-left">
-                <i class="fa-heart ${isLiked ? 'fas liked' : 'far'}" data-action="like"></i>
-                <i class="far fa-comment" data-action="comment"></i>
+        <div class="post-left">
+            <div class="post-header">
+                <div class="post-avatar">${avatarHtml}</div>
+                <div class="post-user">${username}</div>
+            </div>
+            <img class="post-image" src="${postData.imageURL}" alt="Post Image" />
+            <div class="post-actions">
+                <div class="post-actions-left">
+                    <i class="fa-heart ${isLiked ? 'fas liked' : 'far'}" data-action="like"></i>
+                    <i class="far fa-comment" data-action="comment"></i>
+                </div>
             </div>
         </div>
-        <div class="post-likes">${likeCount} likes</div>
-        <div class="post-caption"><strong>${username}</strong> ${postData.caption}</div>
-        <div class="post-comments" id="comments-${postKey}"></div>
-        <div class="add-comment">
-            <input type="text" placeholder="Add a comment..." data-action="comment-input" />
-            <button data-action="comment-submit">Post</button>
+        <div class="post-right">
+            <div class="post-likes">${likeCount} likes</div>
+            <div class="post-caption"><strong>${username}</strong> ${postData.caption}</div>
+            <div class="post-comments" id="comments-${postKey}"></div>
+            <div class="add-comment">
+                <input type="text" placeholder="Add a comment..." data-action="comment-input" />
+                <button data-action="comment-submit">Post</button>
+            </div>
         </div>
     `;
+
 
     // Render comments
     const commentsEl = div.querySelector(`#comments-${postKey}`);
@@ -154,17 +159,48 @@ function loadProfiles() {
 
 function setCurrentUser(userObj) {
     currentUser = userObj;
+
+    const welcomeTitle = document.getElementById("welcomeTitle");
+    const welcomeSubtitle = document.getElementById("welcomeSubtitle");
+
+    const fadeBannerText = (titleText, subtitleText) => {
+        if (!welcomeTitle || !welcomeSubtitle) return;
+        welcomeTitle.classList.add("fade-out");
+        welcomeSubtitle.classList.add("fade-out");
+
+        // Wait for fade-out, then change text, then fade back in
+        setTimeout(() => {
+            welcomeTitle.textContent = titleText;
+            welcomeSubtitle.textContent = subtitleText;
+            welcomeTitle.classList.remove("fade-out");
+            welcomeSubtitle.classList.remove("fade-out");
+            welcomeTitle.classList.add("fade-in");
+            welcomeSubtitle.classList.add("fade-in");
+
+            // Clean up classes after fade completes
+            setTimeout(() => {
+                welcomeTitle.classList.remove("fade-in");
+                welcomeSubtitle.classList.remove("fade-in");
+            }, 400);
+        }, 250);
+    };
+
     if (currentUser) {
         authIcon.style.color = "#4a4fcf";
         signedInUserSpan.style.display = "inline-block";
         signedInUserSpan.textContent = currentUser.username;
         localStorage.setItem("petpaths_currentUser", JSON.stringify({ username: currentUser.username, key: currentUser.key }));
+
+        fadeBannerText(`🐾 Welcome, ${currentUser.username}!`, "Glad to see you back on Pet Net 🐶");
     } else {
         authIcon.style.color = "black";
         signedInUserSpan.style.display = "none";
         signedInUserSpan.textContent = "";
         localStorage.removeItem("petpaths_currentUser");
+
+        fadeBannerText("🐾 Welcome to Pet Net!", "Share your walks, meet local pets, and see what everyone’s up to.");
     }
+
     renderFeed();
 }
 
@@ -410,3 +446,6 @@ renderFeed = function() {
     origRenderFeed.apply(this, arguments);
     if (!currentUser) tryRestoreUser();
 };
+
+const quickPostBtn = document.getElementById("quickPostBtn");
+if (quickPostBtn) quickPostBtn.addEventListener("click", openCreatePostModal);

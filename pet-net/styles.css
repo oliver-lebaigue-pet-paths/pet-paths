@@ -147,6 +147,8 @@ body {
     width: 100%;
     display: flex;
     flex-direction: column;
+    margin-top: 0 !important;
+    padding-top: 0 !important;
 }
 .stories {
     display: flex;
@@ -469,3 +471,274 @@ body {
         border-radius: 0;
     }
 }
+/* Desktop feed layout: image + actions on left, text on right (stacked properly) */
+@media (min-width: 900px) {
+    .feed-post {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+        margin-bottom: 30px;
+    }
+
+    /* Left side (image + like/comment buttons) */
+    .feed-post .post-left {
+        flex: 0 0 45%;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid #eee;
+    }
+
+    .feed-post .post-image {
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+        display: block;
+    }
+
+    .feed-post .post-actions {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 15px;
+        border-top: 1px solid #eee;
+    }
+
+    /* Right side (text/comments stacked vertically) */
+    .feed-post .post-right {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding: 10px 15px;
+    }
+
+    .feed-post .post-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 8px;
+        margin-bottom: 8px;
+    }
+
+    .feed-post .post-caption,
+    .feed-post .post-likes,
+    .feed-post .post-comments,
+    .feed-post .add-comment {
+        margin-bottom: 10px;
+    }
+
+    .feed-post .post-comments {
+        border-top: 1px solid #eee;
+        padding-top: 8px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .feed-post .add-comment {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-top: 1px solid #eee;
+        padding-top: 8px;
+    }
+
+    .content {
+        max-width: 900px;
+        margin: 90px auto 90px auto;
+        padding: 0 20px;
+    }
+}
+/* === Smooth responsive layout between mobile & desktop === */
+
+/* Base: mobile-first (already stacked) */
+.feed-post {
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+}
+
+/* Desktop (≥900px): image left, text right */
+@media (min-width: 900px) {
+    .feed-post {
+        flex-direction: row;
+        align-items: flex-start;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+        margin-bottom: 30px;
+        transition: all 0.3s ease;
+    }
+
+    .feed-post .post-left {
+        flex: 0 0 45%;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid #eee;
+        transition: all 0.3s ease;
+    }
+
+    .feed-post .post-right {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding: 10px 15px;
+        transition: all 0.3s ease;
+    }
+
+    .feed-post .post-header {
+        background: #fafafa;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 15px;
+        transition: background 0.3s ease;
+    }
+
+    .feed-post .post-image {
+        width: 100%;
+        height: auto;
+        display: block;
+        object-fit: cover;
+        transition: all 0.3s ease;
+    }
+
+    .feed-post .post-actions {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 15px;
+        border-top: 1px solid #eee;
+        transition: all 0.3s ease;
+    }
+
+    .feed-post .post-right .post-comments {
+        border-top: 1px solid #eee;
+        margin-top: 10px;
+        max-height: 200px;
+        overflow-y: auto;
+        transition: all 0.3s ease;
+    }
+
+    .feed-post .add-comment {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-top: 1px solid #eee;
+        padding-top: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .content {
+        max-width: 900px;
+        margin: 90px auto 90px auto;
+        padding: 0 20px;
+        transition: all 0.3s ease;
+    }
+}
+/* === End smooth responsive layout === */
+
+.fab {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+    z-index: 2000;
+}
+.fab:hover {
+    background: var(--primary-dark);
+    transform: scale(1.05);
+}
+
+.welcome-banner {
+    text-align: center;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: var(--btn-text);
+    padding: 18px 14px;
+    border-radius: 16px;
+    margin: 15px auto 15px auto; /* smaller top space */
+    max-width: 900px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.welcome-banner:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+}
+
+.welcome-banner h2 {
+    margin: 0 0 6px 0;
+    font-weight: 700;
+}
+
+.welcome-banner p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+/* --- Fade animation for welcome message --- */
+#welcomeTitle,
+#welcomeSubtitle {
+    transition: opacity 0.4s ease;
+}
+
+.fade-out {
+    opacity: 0;
+}
+
+.fade-in {
+    opacity: 1;
+}
+
+/* --- Enhanced mobile look --- */
+@media (max-width: 899px) {
+    .feed {
+        padding-bottom: 80px; /* room above footer */
+    }
+
+    .feed-post {
+        border-radius: 16px;
+        overflow: hidden;
+        background: white;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        margin-bottom: 22px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .feed-post:active {
+        transform: scale(0.99);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .feed-post .post-header {
+        background: #fafafa;
+        border-bottom: 1px solid #eee;
+    }
+
+    .feed-post .post-image {
+        border-radius: 0;
+    }
+
+    .feed-post .post-actions {
+        border-top: 1px solid #eee;
+    }
+}
+/* --- End enhanced mobile look --- */
