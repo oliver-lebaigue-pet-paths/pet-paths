@@ -449,3 +449,43 @@ renderFeed = function() {
 
 const quickPostBtn = document.getElementById("quickPostBtn");
 if (quickPostBtn) quickPostBtn.addEventListener("click", openCreatePostModal);
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Trigger bark when sending a post (on form submit)
+    document.getElementById('createPostForm').addEventListener('submit', (e) => {
+        e.preventDefault(); // Prevent default form submission
+        // Your existing post submission logic here (e.g., send to server, update feed)
+        playSound('barkSound'); // Trigger bark on successful post send
+        // Optionally: Close modal or reset form after
+        document.getElementById('createPostModal').classList.add('hidden');
+    });
+
+    // 2. Trigger bark when liking a post (using event delegation for dynamic feed)
+    // Assumes each post has a like button with class 'like-btn' (e.g., <button class="like-btn"> or <i class="fa-heart like-btn">)
+    document.getElementById('feed').addEventListener('click', (e) => {
+        if (e.target.classList.contains('like-btn')) {
+            e.preventDefault(); // If it's a button/form
+            // Your existing like logic here (e.g., toggle like, update server)
+            playSound('barkSound'); // Trigger bark on like
+        }
+    });
+
+    // 3. Trigger bark when commenting on a post (using event delegation)
+    // Assumes each post has a comment form with class 'comment-form' (e.g., <form class="comment-form">)
+    document.getElementById('feed').addEventListener('submit', (e) => {
+        if (e.target.classList.contains('comment-form')) {
+            e.preventDefault();
+            // Your existing comment submission logic here (e.g., send comment, update UI)
+            playSound('barkSound'); // Trigger bark on comment submit
+        }
+    });
+
+    // Optional: If comments are triggered by a button click instead of form submit
+    // (e.g., a <button class="comment-btn"> that opens a form or submits directly)
+    document.getElementById('feed').addEventListener('click', (e) => {
+        if (e.target.classList.contains('comment-btn')) {
+            // Your logic here
+            playSound('barkSound');
+        }
+    });
+});

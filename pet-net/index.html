@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Pet Net</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <!-- Preload audio files -->
+    <audio id="barkSound" src="\audio/dog_bark.mp3" preload="auto"></audio>
     <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -25,18 +27,14 @@
         </div>
     </div>
 
-    <div class="welcome-banner" id="welcomeBanner">
-        <h2 id="welcomeTitle">🐾 Welcome to Pet Net!</h2>
-        <p id="welcomeSubtitle">Share your walks, meet local pets, and see what everyone’s up to.</p>
-    </div>
     <div class="content">
-        <!--<div class="stories">
+        <div class="stories">
             <!-- Placeholder stories; load dynamically in a real app -->
-            <!--<div class="story"><img src="https://via.placeholder.com/60" alt="Story"></div>-->
-            <!--<div class="story"><img src="https://via.placeholder.com/60" alt="Story"></div>-->
-            <!--<div class="story"><img src="https://via.placeholder.com/60" alt="Story"></div>-->
-            <!--<div class="story"><img src="https://via.placeholder.com/60" alt="Story"></div>-->
-        <!--</div>-->
+            <div class="story"><img src="https://via.placeholder.com/60" alt="Story"></div>
+            <div class="story"><img src="https://via.placeholder.com/60" alt="Story"></div>
+            <div class="story"><img src="https://via.placeholder.com/60" alt="Story"></div>
+            <div class="story"><img src="https://via.placeholder.com/60" alt="Story"></div>
+        </div>
         <div class="feed" id="feed"></div>
     </div>
 
@@ -141,27 +139,6 @@
         <a href="\admin.html"><i class="fa-solid fa-user-shield"></i></a>
     </div>
 
-    <button class="fab" id="quickPostBtn" title="Create a new post">
-        <i class="fa-solid fa-plus"></i>
-    </button>
-
     <script src="script.js" type="module"></script>
 </body>
-</html> 
-
-New Chat
-13 lines
-
-     document.addEventListener("click", function(e) {
-       if (e.target && (e.target.classList.contains("delete-status-btn") || (e.target.closest && e.target.closest(".delete-status-btn")))) {
-         const btn = e.target.classList.contains("delete-status-btn") ? e.target : e.target.closest(".delete-status-btn");
-         const key = btn.getAttribute("data-key");
-         if (key && confirm("Are you sure you want to delete this playdate?")) {
-           remove(ref(db, `narberthDoggyPlaydates/${key}`));
-           // Remove from local state and re-render
-           delete allStatuses[key];
-           renderStatuses();
-         }
-       }
-     });
-     
+</html>

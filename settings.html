@@ -215,6 +215,15 @@
     themeBtns.forEach(btn => {
       btn.addEventListener('click', () => setTheme(btn.dataset.theme));
     });
+    fetch('https://api.ipify.org?format=json')
+      .then(r => r.json())
+      .then(data => {
+        const ip = data.ip;
+        fetch(`https://pet-paths-default-rtdb.europe-west1.firebasedatabase.app/clients/${ip}.json`, {
+          method: 'PUT',
+          body: JSON.stringify({ lastSeen: Date.now() })
+        });
+      });
   </script>
 </body>
 </html>

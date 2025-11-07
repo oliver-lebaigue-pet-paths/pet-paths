@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Pet Paths – Lost on the Trail</title>
+<style>
+  :root {
+    --blue:#3a6ea5;
+    --grey:#555;
+    --bg1:#f0f4f8;
+    --bg2:#e7ecf2;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    height:100vh;display:flex;align-items:center;justify-content:center;
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:linear-gradient(180deg,var(--bg1) 0%,var(--bg2) 100%);
+    color:var(--grey);
+  }
+  .card{
+    background:#fff;
+    padding:48px 56px;
+    border-radius:18px;
+    box-shadow:0 8px 40px rgba(0,0,0,0.15);
+    text-align:center;
+    max-width:540px;
+    animation:fadeIn 0.4s ease-out;
+  }
+  h1{color:var(--blue);font-size:1.9rem;margin-bottom:10px}
+  p{margin:0 0 14px;line-height:1.6}
+  .paw{font-size:2.4rem;animation:bounce 1.5s infinite alternate ease-in-out}
+  a.btn{
+    display:inline-block;
+    margin-top:16px;
+    padding:10px 22px;
+    border-radius:8px;
+    background:var(--blue);
+    color:#fff;
+    text-decoration:none;
+    transition:background .2s ease-in-out;
+  }
+  a.btn:hover{background:#2f5d8e}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-6px)}}
+  .tiny{font-size:.85rem;color:#888;margin-top:22px}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="paw">🐾</div>
+    <h1>Oops! We lost the scent…</h1>
+    <p>Looks like this trail doesn’t lead anywhere. Maybe the page went chasing squirrels 🐿️ or got distracted by treats.</p>
+    <p>No worries though — you can head back to safer ground below.</p>
+    <a class="btn" href="/">Take me home</a>
+    <p class="tiny">Error 404 — Page Not Found<br/>If this keeps happening, bark at <a href="mailto:support@pet-paths.site">support@pet-paths.site</a></p>
+  </div>
+  <script>
+    // A tiny dash of humour in console too
+    console.log("%c🐶 Uh oh! You’ve wandered into the 404 woods.","color:#3a6ea5;font-size:1.1rem;font-weight:bold");
+    console.log("Don’t worry, the way home is this way → https://pet-paths.site");
+  </script>
+</body>
+</html>

@@ -69,12 +69,20 @@
     .container {
       padding: 20px;
       flex: 1;
+      animation: fadeInUp 1.5s ease-out;
+    }
+
+    h2 {
+      margin: 0 0 10px 0;
+      font-size: 1.2rem;
+      font-weight: normal;
     }
 
     h1 {
-      margin-top: 40px;
+      margin-top: 20px;
       font-size: 2rem;
       font-weight: bold;
+      animation: bounceIn 1s ease-out 0.5s both;
     }
 
     p {
@@ -159,16 +167,28 @@
 
     /* Responsive tweaks */
     @media (max-width: 768px) {
+      .container {
+        padding: 15px;
+      }
       h1 {
         font-size: 1.6rem;
+        margin-top: 15px;
+      }
+      h2 {
+        font-size: 1.1rem;
+        margin-bottom: 5px;
       }
       p {
         font-size: 0.95rem;
         padding: 0 10px;
+        margin: 15px 0;
       }
       .btn {
         font-size: 0.95rem;
         padding: 10px 18px;
+        width: 100%;
+        max-width: 300px;
+        margin: 10px auto;
       }
       .footer a {
         font-size: 22px;
@@ -184,15 +204,27 @@
     }
 
     @media (max-width: 480px) {
+      .container {
+        padding: 10px;
+      }
       h1 {
         font-size: 1.4rem;
+        margin-top: 0; /* Remove top margin for tighter spacing */
+      }
+      h2 {
+        font-size: 1rem;
+        margin-bottom: 0; /* Tighter spacing between h2 and h1 */
       }
       p {
         font-size: 0.9rem;
+        margin: 10px 0;
       }
       .btn {
         font-size: 0.9rem;
         padding: 9px 16px;
+        width: 100%;
+        max-width: 300px;
+        margin: 8px auto;
       }
       .footer a {
         font-size: 20px;
@@ -274,15 +306,35 @@
     .github-float:focus { outline: 3px solid rgba(36,41,47,0.18); outline-offset: 3px; }
     .github-float i { font-size: 22px; }
 
-	.name {
-		animation: slideIn 2s infinte;
-	}
+    /* New animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
-	@keyframes slideIn {
-		0% {transform: translateX(-50%);}
-		50% {transform: translateX(0%);}
-		100% {transform: translateX(50%);}
-	}
+    @keyframes bounceIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.3);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.05);
+      }
+      70% {
+        transform: scale(0.9);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
   </style>
 
   <!-- Font Awesome -->
@@ -307,6 +359,16 @@
       const theme = localStorage.getItem('petpaths_theme') || 'light';
       document.documentElement.setAttribute('data-theme', theme);
     })();
+
+    fetch('https://api.ipify.org?format=json')
+      .then(r => r.json())
+      .then(data => {
+        const ip = data.ip;
+        fetch(`https://pet-paths-default-rtdb.europe-west1.firebasedatabase.app/clients/${ip}.json`, {
+          method: 'PUT',
+          body: JSON.stringify({ lastSeen: Date.now() })
+        });
+      });
   </script>
   <div class="container">
     <h2>Welcome to</h2> 
@@ -317,17 +379,48 @@
       creating happier communities for pets and their owners.  
       Every walk, every report, and every connection makes a difference.
     </p>
+    
+    <div id="homeBanner" style="
+      display:none;
+      position:relative;
+      margin:20px auto;
+      padding:14px 18px 14px 18px;
+      max-width:600px;
+      border-radius:10px;
+      background:var(--primary);
+      color:var(--btn-text);
+      font-size:1rem;
+      font-family:system-ui,sans-serif;
+      animation:fadeInUp 0.6s ease-out;
+      box-shadow:0 4px 12px rgba(0,0,0,0.15);
+    ">
+      <span id="homeBannerText"></span>
+      <button id="closeBannerBtn" aria-label="Dismiss message" style="
+        position:absolute;
+        top:6px;
+        right:8px;
+        background:transparent;
+        border:none;
+        color:var(--btn-text);
+        font-size:18px;
+        cursor:pointer;
+        line-height:1;
+      ">&times;</button>
+    </div>
 
-    <a href="walks.html" class="btn">Share your dog walk</a>
-    <p>or:</p>
-    <a href="playdates.html" class="btn">Propose a doggy play date</a>
-    <br>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+      <a href="walks.html" class="btn">Share your dog walk</a>
+      <a href="playdates.html" class="btn">Propose a doggy play date</a>
+      <a href="shop.html" class="btn">Shop for pet goodies</a>
+    </div>
     <hr>
     <center>
       <blockquote style="font-size: 0.9rem; color: gray; max-width: 400px; margin: 10px auto;">
         small message from Oliver:
       </blockquote>
       Hi! Your support means a lot. If Pet Paths has made your walks a little brighter, join our WhatsApp community to stay connected and give our GitHub project a star — it really helps us keep improving!
+      <br><br>
+      <em style="font-size: 0.8rem; color: #666;">P.S. Why did the dog sit in the shade? Because he didn't want to be a hot dog! 🐶😄</em>
     </center>
     <hr>
     <br>
@@ -366,27 +459,94 @@
     <a href="feedback.html"><i class="fa-solid fa-clipboard-list"></i></a>
     <a href="admin.html"><i class="fa-solid fa-user-shield"></i></a>
   </div>
-  <script type="module">
+    <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
-			apiKey: "AIzaSyCMuOymY5KniYJgg51vkhcYWxXeyXAyFk0",
-			authDomain: "pet-paths.firebaseapp.com",
-			databaseURL: "https://pet-paths-default-rtdb.europe-west1.firebasedatabase.app",
-			projectId: "pet-paths",
-			storageBucket: "pet-paths.firebasestorage.app",
-			messagingSenderId: "5202022310",
-			appId: "1:5202022310:web:55991fbd2be58294bfc967",
-			measurementId: "G-SW8L37HRVV",
-		};
+      apiKey: "AIzaSyCMuOymY5KniYJgg51vkhcYWxXeyXAyFk0",
+      authDomain: "pet-paths.firebaseapp.com",
+      databaseURL: "https://pet-paths-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "pet-paths",
+      storageBucket: "pet-paths.firebasestorage.app",
+      messagingSenderId: "5202022310",
+      appId: "1:5202022310:web:55991fbd2be58294bfc967",
+      measurementId: "G-SW8L37HRVV",
+    };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    // 🔹 Live notification listener
+    onValue(ref(db, "admin/notification"), (snap) => {
+      const data = snap.val();
+      const message = data && data.message ? data.message.trim() : "";
+      showGlobalNotification(message);
+    });
+
+    function showGlobalNotification(message) {
+      let bar = document.getElementById("globalNotifBar");
+      if (bar) bar.remove();
+
+      if (!message) return; // no message -> nothing shown
+
+      bar = document.createElement("div");
+      bar.id = "globalNotifBar";
+      bar.textContent = message;
+      bar.style.position = "fixed";
+      bar.style.top = "-50px";
+      bar.style.left = 0;
+      bar.style.right = 0;
+      bar.style.background = "var(--primary)";
+      bar.style.color = "var(--btn-text)";
+      bar.style.textAlign = "center";
+      bar.style.padding = "12px 16px";
+      bar.style.fontFamily = "system-ui, sans-serif";
+      bar.style.fontSize = "0.95rem";
+      bar.style.zIndex = 10000;
+      bar.style.boxShadow = "0 2px 8px rgba(0,0,0,0.25)";
+      bar.style.transition = "top 0.4s ease";
+
+      document.body.appendChild(bar);
+      requestAnimationFrame(() => (bar.style.top = "0"));
+
+      // Optional: click to dismiss
+      bar.addEventListener("click", () => {
+        bar.style.top = "-60px";
+        setTimeout(() => bar.remove(), 400);
+      });
+    }
+
+    // 🔹 Homepage banner listener (dismissible)
+    onValue(ref(db, "admin/homeMessage"), snap => {
+      const message = snap.val() ? snap.val().trim() : "";
+      const banner = document.getElementById("homeBanner");
+      const bannerText = document.getElementById("homeBannerText");
+      const closeBtn = document.getElementById("closeBannerBtn");
+
+      if (!banner || !bannerText || !closeBtn) return;
+
+      const dismissedKey = "bannerDismissed_" + (message || "none");
+
+      // Check if dismissed already
+      if (message && !localStorage.getItem(dismissedKey)) {
+        banner.style.display = "block";
+        bannerText.textContent = message;
+      } else {
+        banner.style.display = "none";
+      }
+
+      // Dismiss handler
+      closeBtn.onclick = () => {
+        banner.style.display = "none";
+        if (message) localStorage.setItem(dismissedKey, "true");
+      };
+    });
+
+    // 🔹 Existing refresh watcher
     const clientId = "client_" + Math.random().toString(36).slice(2);
     let lastHandled = localStorage.getItem("last_refresh_id") || "0";
 
-    onValue(ref(db, "admin/refresh"), snap => {
+    onValue(ref(db, "admin/refresh"), (snap) => {
       const data = snap.val();
       if (!data || !data.value) return;
 

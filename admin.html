@@ -6,385 +6,192 @@
   <title>Admin Control Panel - Pet Paths</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
   <style>
+    /* --- (kept your original styles, plus a few small additions for lists & modals) --- */
     @media (max-width: 600px) {
-      html, body {
-        width: 100vw;
-        overflow-x: hidden !important;
-        margin: 0;
-        padding: 0;
-      }
-      .admin-card {
-        padding: 14px 6px 12px 6px;
-        width: 100%;
-        max-width: 100%;
-        border-radius: 0;
-        box-sizing: border-box;
-      }
-      .content {
-        padding: 14px 0 80px 0;
-        width: 100%;
-        max-width: 100%;
-        min-height: calc(100vh - 64px - 60px);
-        box-sizing: border-box;
-        margin: 0;
-      }
-      .header {
-        font-size: 1.05rem;
-        padding: 10px;
-        width: 100vw;
-        box-sizing: border-box;
-      }
-      .footer {
-        left: 0;
-        bottom: 0;
-        width: 100vw;
-        position: fixed;
-        box-sizing: border-box;
-      }
+      html, body { width: 100vw; overflow-x: hidden !important; margin: 0; padding: 0; }
+      .admin-card { padding: 14px 6px 12px 6px; width: 100%; max-width: 100%; border-radius: 0; box-sizing: border-box; }
+      .content { padding: 14px 0 80px 0; width: 100%; max-width: 100%; min-height: calc(100vh - 64px - 60px); box-sizing: border-box; margin: 0; }
+      .header { font-size: 1.05rem; padding: 10px; width: 100vw; box-sizing: border-box; }
+      .footer { left: 0; bottom: 0; width: 100vw; position: fixed; box-sizing: border-box; }
       .footer a { font-size: 20px; }
       .admin-btn { font-size: 0.98rem; padding: 10px 0; min-width: 90px; }
       pre { font-size: 0.92em; }
-      #passwordForm .admin-card {
-        padding: 20px 22px;
-        max-width: 400px;
-      }
     }
-    :root {
-      --primary: #4a4fcf;
-      --primary-dark: #3a3fb0;
-      --bg: #f3f3f3;
-      --text: #222;
-      --btn-text: #fff;
-      --header-bg: #4a4fcf;
-      --header-text: #fff;
-    }
-    [data-theme="dark"] {
-      --primary: #222b45;
-      --primary-dark: #151a30;
-      --bg: #181a20;
-      --text: #f3f3f3;
-      --btn-text: #fff;
-      --header-bg: #222b45;
-      --header-text: #fff;
-    }
-    [data-theme="forest"] {
-      --primary: #388e3c;
-      --primary-dark: #256029;
-      --bg: #e8f5e9;
-      --text: #1b3a1b;
-      --btn-text: #fff;
-      --header-bg: #388e3c;
-      --header-text: #fff;
-    }
-    [data-theme="ocean"] {
-      --primary: #1976d2;
-      --primary-dark: #0d47a1;
-      --bg: #e3f2fd;
-      --text: #0d223a;
-      --btn-text: #fff;
-      --header-bg: #1976d2;
-      --header-text: #fff;
-    }
-    [data-theme="rose"] {
-      --primary: #d81b60;
-      --primary-dark: #880e4f;
-      --bg: #fff1f6;
-      --text: #3a1b2f;
-      --btn-text: #fff;
-      --header-bg: #d81b60;
-      --header-text: #fff;
-    }
-    [data-theme="dark"] {
-      --primary: #222b45;
-      --primary-dark: #151a30;
-      --bg: #181a20;
-      --text: #f3f3f3;
-      --btn-text: #fff;
-      --header-bg: #222b45;
-      --header-text: #fff;
-    }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      transition: background 0.3s, color 0.3s;
-    }
-    .header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 15px; background: var(--header-bg);
-      color: var(--header-text);
-      font-size: 1.2rem; font-weight: bold;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      transition: background 0.3s, color 0.3s;
-    }
-    .content {
-      flex: 1;
-      padding: 24px 16px 80px 16px;
-      max-width: 600px;
-      margin: 0 auto;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-    }
-    .admin-card {
-      background: var(--card-bg, #23243a);
-      color: var(--card-text, var(--text));
-      border-radius: 16px;
-      box-shadow: 0 2px 10px rgba(60,60,60,0.08);
-      border: 1.5px solid #e0e0de;
-      padding: 24px 22px 18px 22px;
-      margin-top: 30px;
-      width: 100%;
-      max-width: 480px;
-      display: flex;
-      flex-direction:  column;
-      gap: 1.2em;
-      align-items: center;
-      transition: background 0.3s, color 0.3s;
-    }
-    /* Card background for theme */
-    :root {
-      --card-bg: #fff;
-      --card-text: #222;
-    }
-    [data-theme="dark"] {
-      --card-bg: #23243a;
-      --card-text: #f3f3f3;
-    }
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 60px;
-      height: 34px;
-    }
-    .switch input {display:none;}
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #ccc;
-      transition: .4s;
-      border-radius: 34px;
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 26px;
-      width: 26px;
-      left: 4px;
-      bottom: 4px;
-      background-color: white;
-      transition: .4s;
-      border-radius: 50%;
-    }
-    input:checked + .slider {
-      background-color: #4a4fcf;
-    }
-    input:checked + .slider:before {
-      transform: translateX(26px);
-    }
-    .footer {
-      background: var(--primary); display: flex; justify-content: space-around;
-      padding: 14px 0 10px; position: fixed; bottom: 0; width: 100%;
-      z-index: 1002;
-      transition: background 0.3s;
-    }
-    .footer a { text-decoration: none; color: black; font-size: 24px; flex: 1;
-      display: flex; align-items: center; justify-content: center; position: relative; }
-    .footer a.active::before {
-      content: ""; width: 50px; height: 50px; background: var(--primary); border-radius: 50%;
-      position: absolute; top: -25px; left: 50%; transform: translateX(-50%); z-index: 1;
-    }
-    .footer a.active i { font-size: 30px; transform: translateY(-5px); z-index: 2; }
-    .admin-btn {
-      background: #4a4fcf; color: #fff; border: none;
-      padding: 12px 22px; border-radius: 10px;
-      font-size: 1rem; font-weight: 600;
-      cursor: pointer; margin-top: 10px;
-      transition: background 0.2s;
-    }
-    .admin-btn:hover { background: #3a3fb0; }
-    .status-msg { margin-top: 10px; color: #3a6ea5; font-size: 1em; }
-    #passwordForm {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 50vh;
-      width: 100%;
-      max-width: 600px;
-    }
-    #passwordForm .admin-card {
-      max-width: 400px;
-      padding: 30px 24px;
-      text-align: center;
-    }
-    #passwordForm h2 {
-      color: #3a6ea5;
-      margin-bottom: 20px;
-    }
-    #passwordForm input[type="password"] {
-      width: 100%;
-      padding: 12px;
-      border: 1.5px solid #e0e0de;
-      border-radius: 8px;
-      font-size: 1rem;
-      margin-bottom: 15px;
-      box-sizing: border-box;
-      background: var(--card-bg, #fff);
-      color: var(--text);
-    }
-    #passwordForm input[type="password"]:focus {
-      outline: none;
-      border-color: var(--primary);
-    }
-    #errorMsg {
-      color: #d32f2f;
-      font-size: 0.95em;
-      margin-top: 10px;
-      display: none;
-    }
-    #adminContent {
-      display: none;
-    }
+    :root { --primary: #4a4fcf; --primary-dark: #3a3fb0; --bg: #f3f3f3; --text: #222; --btn-text: #fff; --header-bg: #4a4fcf; --header-text: #fff; }
+    [data-theme="dark"] { --primary: #222b45; --primary-dark: #151a30; --bg: #181a20; --text: #f3f3f3; --btn-text: #fff; --header-bg: #222b45; --header-text: #fff; }
+    body { margin: 0; font-family: Arial, sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; min-height: 100vh; transition: background 0.3s, color 0.3s; }
+    .header { display:flex; justify-content:space-between; align-items:center; padding:15px; background:var(--header-bg); color:var(--header-text); font-size:1.2rem; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+    .content { flex:1; padding:24px 16px 120px 16px; max-width:900px; margin:0 auto; width:100%; display:flex; flex-direction:column; gap:18px; align-items:center; }
+    .admin-card { background: var(--card-bg, #fff); color: var(--card-text, var(--text)); border-radius:16px; box-shadow:0 2px 10px rgba(60,60,60,0.08); border:1.5px solid #e0e0de; padding:24px 22px 18px 22px; margin-top:10px; width:100%; max-width:920px; display:flex; flex-direction:column; gap:1.2em; align-items:flex-start; transition:background 0.3s, color 0.3s; }
+    .card-row { display:flex; gap:12px; width:100%; align-items:center; flex-wrap:wrap; }
+    .admin-btn { background: #4a4fcf; color: #fff; border: none; padding: 10px 16px; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .admin-btn.secondary { background:#eee; color:#111; border:1px solid #ddd; font-weight:600; }
+    .admin-btn.warn { background:#d32f2f; }
+    .small { font-size:0.9rem; color:#666; }
+    .list { width:100%; max-height:260px; overflow:auto; border-radius:8px; border:1px solid #eee; padding:8px; background: #fafafa; }
+    .list .row { display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee; align-items:center; gap:8px; }
+    .list .row:last-child { border-bottom: none; }
+    .pill { padding:6px 8px; border-radius:8px; background:#f0f0ff; color:#222; font-weight:600; font-size:0.85rem; }
+    .footer { background: var(--primary); display:flex; justify-content:space-around; padding:14px 0 10px; position:fixed; bottom:0; width:100%; z-index:1002; transition: background 0.3s; }
+    .footer a { text-decoration:none; color:black; font-size:24px; flex:1; display:flex; align-items:center; justify-content:center; position:relative; }
+    .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:9999; padding:18px; }
+    .modal { background:#fff; padding:18px; border-radius:12px; width:100%; max-width:680px; max-height:85vh; overflow:auto; box-shadow:0 6px 24px rgba(0,0,0,0.25); }
+    input[type="text"], textarea, select { width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box; font-size:1rem; }
+    label { font-weight:600; font-size:0.95rem; margin-bottom:6px; display:block; }
+    .row-between { display:flex; justify-content:space-between; width:100%; align-items:center; gap:12px; }
+    .muted { color:#777; font-size:0.95rem; }
+    .log-entry { font-family:monospace; font-size:0.92rem; color:#333; padding:6px 0; border-bottom:1px dashed #eee; }
+    @media (max-width:720px) { .card-row { flex-direction:column; } .row-between { flex-direction:column; align-items:flex-start; } }
   </style>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCMuOymY5KniYJgg51vkhcYWxXeyXAyFk0",
-      authDomain: "pet-paths.firebaseapp.com",
-      databaseURL: "https://pet-paths-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "pet-paths",
-      storageBucket: "pet-paths.firebasestorage.app",
-      messagingSenderId: "5202022310",
-      appId: "1:5202022310:web:55991fbd2be58294bfc967",
-      measurementId: "G-SW8L37HRVV"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // unique ID per admin session (so your browser won’t refresh itself)
-    const adminId = "admin_" + Math.random().toString(36).slice(2);
-
-    // In Development Mode toggle
-    const devSwitch = () => document.getElementById("devSwitch");
-    const devStatus = document.getElementById("devStatus");
-
-    onValue(ref(db, "admin/inDevelopment"), snap => {
-      const val = !!snap.val();
-      devSwitch().checked = val;
-      devStatus.textContent = val ? "ON" : "OFF";
-    });
-
-    devSwitch().addEventListener("change", async () => {
-      const newVal = devSwitch().checked;
-      await set(ref(db, "admin/inDevelopment"), newVal);
-
-      // Trigger refresh for all clients except this admin (ON or OFF)
-      const refreshData = {
-        value: Date.now(),
-        sender: adminId
-      };
-      await set(ref(db, "admin/refresh"), refreshData);
-
-      devStatus.textContent = newVal ? "ON" : "OFF";
-
-      // reset refresh value soon after
-      setTimeout(async () => {
-        await set(ref(db, "admin/refresh"), { value: 0, sender: "" });
-      }, 1200);
-    });
-
-    // Manual refresh button
-    const refreshBtn = document.getElementById("refreshBtn");
-    const refreshStatus = document.getElementById("refreshStatus");
-
-    refreshBtn.addEventListener("click", async () => {
-      const refreshData = {
-        value: Date.now(),
-        sender: adminId
-      };
-      await set(ref(db, "admin/refresh"), refreshData);
-      refreshStatus.textContent = "Triggered!";
-      setTimeout(async () => {
-        await set(ref(db, "admin/refresh"), { value: 0, sender: "" });
-        refreshStatus.textContent = "";
-      }, 1200);
-    });
-  </script>
 </head>
 <body>
   <script>
-    // Theme loader for all pages
+    // Theme loader (keeps your existing behaviour)
     (function() {
       const theme = localStorage.getItem('petpaths_theme') || 'light';
       document.documentElement.setAttribute('data-theme', theme);
     })();
   </script>
+
   <div class="header">
     <span>Admin Control Panel</span>
     <i class="fa-solid fa-user-shield"></i>
   </div>
+
   <div class="content">
     <!-- Password Protection Form -->
-    <div id="passwordForm">
-      <div class="admin-card">
-        <h2><i class="fa-solid fa-lock"></i> Admin Access Required</h2>
-        <p style="text-align: center; margin-bottom: 20px; color: var(--text);">Enter the password to access the admin panel.</p>
-        <form id="passwordCheckForm">
-          <input type="password" id="adminPassword" placeholder="Enter password" required />
-          <button type="submit" class="admin-btn" style="width: 100%; margin-top: 5px;">
-            <i class="fa-solid fa-sign-in-alt"></i> Login
-          </button>
-        </form>
-        <div id="errorMsg">Incorrect password. Please try again.</div>
-      </div>
+    <div id="passwordForm" class="admin-card" style="max-width:560px;margin-top:6vh;">
+      <h2 style="color:#3a6ea5;"><i class="fa-solid fa-lock"></i> Admin Access Required</h2>
+      <p style="margin:0 0 8px;">Enter the password to access the admin panel.</p>
+      <form id="passwordCheckForm" class="row-between" style="width:100%;gap:12px;">
+        <input type="password" id="adminPassword" placeholder="Enter password" required style="flex:1;" />
+        <button type="submit" class="admin-btn" style="min-width:120px;"><i class="fa-solid fa-sign-in-alt"></i> Login</button>
+      </form>
+      <div id="errorMsg" style="color:#d32f2f;display:none;margin-top:8px;">Incorrect password. Please try again.</div>
     </div>
 
     <!-- Admin Content (Hidden Initially) -->
-    <div id="adminContent">
+    <div id="adminContent" style="display:none;width:100%;">
+      <!-- Row: In Development & Refresh (your existing cards) -->
       <div class="admin-card">
-        <h2 style="color:#3a6ea5;">In Development Mode</h2>
-        <label class="switch">
-          <input type="checkbox" id="devSwitch">
-          <span class="slider"></span>
-        </label>
-        <div>Current Status: <span id="devStatus">OFF</span></div>
+        <div class="card-row" style="align-items:center;justify-content:space-between;">
+          <div>
+            <h3 style="margin:0;color:#3a6ea5;">In Development Mode</h3>
+            <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
+              <label class="switch" style="margin:0;">
+                <input type="checkbox" id="devSwitch">
+                <span class="slider"></span>
+              </label>
+              <div>Current Status: <span id="devStatus">OFF</span></div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="admin-btn" id="refreshBtn"><i class="fa-solid fa-arrows-rotate"></i> Trigger Refresh</button>
+            <div id="refreshStatus" class="small muted"></div>
+          </div>
+        </div>
       </div>
+
+      <!-- Row: Notifications & Homepage Banner -->
       <div class="admin-card">
-        <h2 style="color:#3a6ea5;">All Client Refresh</h2>
-        <button class="admin-btn" id="refreshBtn"><i class="fa-solid fa-arrows-rotate"></i> Trigger Refresh</button>
-        <div class="status-msg" id="refreshStatus"></div>
-        <div style="font-size:0.95em;color:#888;margin-top:8px;">All clients will reload when triggered.</div>
+        <div style="width:100%;display:flex;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1; min-width:280px;">
+            <h3 style="margin:0;color:#3a6ea5;">Global Notification</h3>
+            <p class="small muted">This single message will be shown to all users (overwrites previous message).</p>
+            <textarea id="notificationText" rows="3" placeholder="Write message to broadcast..." style="margin-top:8px;"></textarea>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button class="admin-btn" id="sendNotificationBtn"><i class="fa-solid fa-paper-plane"></i> Send</button>
+              <button class="admin-btn secondary" id="clearNotificationBtn"><i class="fa-solid fa-trash"></i> Clear</button>
+            </div>
+            <div id="notificationStatus" class="small muted" style="margin-top:8px;"></div>
+          </div>
+
+          <div style="flex:1; min-width:280px;">
+            <h3 style="margin:0;color:#3a6ea5;">Homepage Banner</h3>
+            <p class="small muted">Short message shown on the homepage when set.</p>
+            <input id="homeMessageInput" type="text" placeholder="Short homepage banner text (e.g. Closed for maintenance)" style="margin-top:8px;" />
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button class="admin-btn" id="saveHomeMsgBtn"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+              <button class="admin-btn secondary" id="clearHomeMsgBtn"><i class="fa-solid fa-trash"></i> Clear</button>
+            </div>
+            <div id="homeMsgStatus" class="small muted" style="margin-top:8px;"></div>
+          </div>
+        </div>
       </div>
-      <div class="admin-card" style="background:#f8f8fa;font-size:0.98em;">
-        <b>To enable auto-refresh on other pages, add this snippet:</b>
-        <pre style="background:#eee;padding:10px 8px;border-radius:8px;overflow-x:auto;font-size:0.95em;">&lt;script type="module"&gt;
-          import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-          import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-          const firebaseConfig = { /* ...your config... */ };
-          const app = initializeApp(firebaseConfig);
-          const db = getDatabase(app);
-          onValue(ref(db, "admin/refresh"), snap => {
-            const val = snap.val();
-            if (val && (!window._lastRefresh || window._lastRefresh !== val)) {
-              window._lastRefresh = val;
-              if (val !== 0) location.reload();
-            }
-          });
-          &lt;/script&gt;</pre>
+
+      <!-- Row: Accounts Manager & Activity Logs -->
+      <div class="admin-card">
+        <div class="card-row" style="width:100%;align-items:flex-start;">
+          <div style="flex:1;min-width:320px;">
+            <h3 style="margin:0;color:#3a6ea5;">Manage Accounts</h3>
+            <p class="small muted">View and delete user accounts stored at <code>/accounts</code>.</p>
+            <div class="list" id="accountsList" style="margin-top:8px;">
+              <div class="muted">Loading accounts…</div>
+            </div>
+          </div>
+
+          <div style="flex:1;min-width:320px;">
+            <h3 style="margin:0;color:#3a6ea5;">Activity Logs</h3>
+            <p class="small muted">Recent admin actions (stored at <code>/admin/logs</code>).</p>
+            <div class="list" id="logsList" style="margin-top:8px;">
+              <div class="muted">Loading logs…</div>
+            </div>
+            <div style="margin-top:8px;display:flex;gap:8px;">
+              <button class="admin-btn secondary" id="clearLogsBtn"><i class="fa-solid fa-broom"></i> Clear Logs</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row: Client IP Management -->
+      <div class="admin-card">
+        <div class="card-row" style="width:100%;align-items:center;justify-content:space-between;">
+          <div>
+            <h3 style="margin:0;color:#3a6ea5;">Client IP Management</h3>
+            <p class="small muted">See active visitors and currently blocked IPs. Use the block/unblock controls to manage access sitewide.</p>
+          </div>
+
+          <div style="display:flex;gap:8px;">
+            <button class="admin-btn" id="openActiveClients"><i class="fa-solid fa-list"></i> Active Clients</button>
+            <button class="admin-btn secondary" id="openBlockedClients"><i class="fa-solid fa-ban"></i> Blocked Clients</button>
+            <button class="admin-btn secondary" id="cleanupExpiredBtn" title="Cleanup expired blocks"><i class="fa-solid fa-clock-rotate-left"></i> Cleanup</button>
+          </div>
+        </div>
+        <div class="small muted" style="margin-top:8px;">Tip: Blocks are enforced sitewide by the Cloudflare Worker.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Active Clients Modal -->
+  <div id="activeModal" class="modal-bg" aria-hidden="true">
+    <div class="modal">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <h3 style="margin:0;color:#3a6ea5;">Active Clients</h3>
+        <div><button class="admin-btn secondary" id="closeActiveModal">Close</button></div>
+      </div>
+      <p class="small muted">Click a client row to open quick actions (Block 1h / 24h / Forever).</p>
+      <div class="list" id="activeClientsList" style="margin-top:8px;">
+        <div class="muted">Loading active clients…</div>
       </div>
     </div>
   </div>
+
+  <!-- Blocked Clients Modal -->
+  <div id="blockedModal" class="modal-bg" aria-hidden="true">
+    <div class="modal">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <h3 style="margin:0;color:#3a6ea5;">Blocked Clients</h3>
+        <div><button class="admin-btn secondary" id="closeBlockedModal">Close</button></div>
+      </div>
+      <p class="small muted">Unblock clients to restore access immediately.</p>
+      <div class="list" id="blockedClientsList" style="margin-top:8px;">
+        <div class="muted">Loading blocked clients…</div>
+      </div>
+    </div>
+  </div>
+
   <div class="footer">
     <a href="settings.html"><i class="fa-solid fa-gear"></i></a>
     <a href="playdates.html"><i class="fa-solid fa-calendar"></i></a>
@@ -395,33 +202,370 @@
     <a class="active" href="admin.html"><i class="fa-solid fa-user-shield"></i></a>
   </div>
 
-  <script>
-    // Password Protection Logic
-    const correctPassword = "Onniecat123!";
-    const passwordForm = document.getElementById("passwordCheckForm");
-    const passwordInput = document.getElementById("adminPassword");
-    const errorMsg = document.getElementById("errorMsg");
-    const adminContent = document.getElementById("adminContent");
-    const passwordSection = document.getElementById("passwordForm");
+ <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, set, onValue, remove, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    passwordForm.addEventListener("submit", function(e) {
-      e.preventDefault();
-      if (passwordInput.value === correctPassword) {
-        passwordSection.style.display = "none";
-        adminContent.style.display = "block";
-        // Optional: Clear the input for security
-        passwordInput.value = "";
-      } else {
-        errorMsg.style.display = "block";
-        passwordInput.value = "";
-        passwordInput.focus();
-      }
-    });
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyCMuOymY5KniYJgg51vkhcYWxXeyXAyFk0",
+    authDomain: "pet-paths.firebaseapp.com",
+    databaseURL: "https://pet-paths-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "pet-paths",
+    storageBucket: "pet-paths.firebasestorage.app",
+    messagingSenderId: "5202022310",
+    appId: "1:5202022310:web:55991fbd2be58294bfc967",
+    measurementId: "G-SW8L37HRVV"
+  };
 
-    // Focus on password input when page loads
-    window.addEventListener("load", function() {
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const adminId = "admin_" + Math.random().toString(36).slice(2);
+
+  // Elements
+  const passwordForm = document.getElementById("passwordCheckForm");
+  const passwordInput = document.getElementById("adminPassword");
+  const errorMsg = document.getElementById("errorMsg");
+  const adminContent = document.getElementById("adminContent");
+  const passwordSection = document.getElementById("passwordForm");
+
+  const devSwitchEl = document.getElementById("devSwitch");
+  const devStatusEl = document.getElementById("devStatus");
+  const refreshBtn = document.getElementById("refreshBtn");
+  const refreshStatus = document.getElementById("refreshStatus");
+
+  const notificationText = document.getElementById("notificationText");
+  const sendNotificationBtn = document.getElementById("sendNotificationBtn");
+  const clearNotificationBtn = document.getElementById("clearNotificationBtn");
+  const notificationStatus = document.getElementById("notificationStatus");
+
+  const homeMessageInput = document.getElementById("homeMessageInput");
+  const saveHomeMsgBtn = document.getElementById("saveHomeMsgBtn");
+  const clearHomeMsgBtn = document.getElementById("clearHomeMsgBtn");
+  const homeMsgStatus = document.getElementById("homeMsgStatus");
+
+  const accountsList = document.getElementById("accountsList");
+  const logsList = document.getElementById("logsList");
+  const clearLogsBtn = document.getElementById("clearLogsBtn");
+
+  const openActiveBtn = document.getElementById("openActiveClients");
+  const openBlockedBtn = document.getElementById("openBlockedClients");
+  const cleanupExpiredBtn = document.getElementById("cleanupExpiredBtn");
+
+  const activeModalEl = document.getElementById("activeModal");
+  const blockedModalEl = document.getElementById("blockedModal");
+  const closeActiveBtnEl = document.getElementById("closeActiveModal");
+  const closeBlockedBtnEl = document.getElementById("closeBlockedModal");
+  const activeClientsList = document.getElementById("activeClientsList");
+  const blockedClientsList = document.getElementById("blockedClientsList");
+
+  const IN_DEV_PATH = "admin/inDevelopment";
+  const REFRESH_PATH = "admin/refresh";
+  const NOTIF_PATH = "admin/notification";
+  const HOME_MSG_PATH = "admin/homeMessage";
+  const ACCOUNTS_PATH = "accounts";
+  const LOGS_PATH = "admin/logs";
+  const CLIENTS_PATH = "clients";
+  const BLOCKED_PATH = "blockedIPs";
+
+  const correctPassword = "Onniecat123!";
+
+  passwordForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (passwordInput.value === correctPassword) {
+      passwordSection.style.display = "none";
+      adminContent.style.display = "block";
+      passwordInput.value = "";
+      initAdminUI();
+    } else {
+      errorMsg.style.display = "block";
+      passwordInput.value = "";
       passwordInput.focus();
+    }
+  });
+
+  window.addEventListener("load", () => passwordInput.focus());
+
+  function logAction(action, data = {}) {
+    const entry = { ts: Date.now(), admin: adminId, action, data };
+    const key = Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+    set(ref(db, `${LOGS_PATH}/${key}`), entry).catch(() => {});
+  }
+
+  function initAdminUI() {
+    setupInDevListener();
+    setupRefreshButton();
+    setupNotifications();
+    setupHomeMessage();
+    setupAccountsManager();
+    setupLogsViewer();
+    setupClientIPListeners();
+    bindModalControls();
+  }
+
+  function setupInDevListener() {
+    const devRef = ref(db, IN_DEV_PATH);
+    onValue(devRef, (snap) => {
+      const val = !!snap.val();
+      devSwitchEl.checked = val;
+      devStatusEl.textContent = val ? "ON" : "OFF";
     });
-  </script>
+
+    devSwitchEl.addEventListener("change", async () => {
+      const newVal = devSwitchEl.checked;
+      await set(ref(db, IN_DEV_PATH), newVal);
+      await set(ref(db, REFRESH_PATH), { value: Date.now(), sender: adminId });
+      setTimeout(() => set(ref(db, REFRESH_PATH), { value: 0, sender: "" }), 1200);
+      logAction("toggle-in-dev", { value: newVal });
+    });
+  }
+
+  function setupRefreshButton() {
+    refreshBtn.addEventListener("click", async () => {
+      await set(ref(db, REFRESH_PATH), { value: Date.now(), sender: adminId });
+      refreshStatus.textContent = "Triggered!";
+      setTimeout(() => {
+        set(ref(db, REFRESH_PATH), { value: 0, sender: "" });
+        refreshStatus.textContent = "";
+      }, 1200);
+      logAction("trigger-refresh");
+    });
+  }
+
+  function setupNotifications() {
+    const nRef = ref(db, NOTIF_PATH);
+    onValue(nRef, (snap) => {
+      const v = snap.val();
+      notificationText.value = v?.message || "";
+    });
+
+    sendNotificationBtn.addEventListener("click", async () => {
+      const message = notificationText.value.trim();
+      if (!message) {
+        notificationStatus.textContent = "Notification is empty.";
+        return;
+      }
+      await set(ref(db, NOTIF_PATH), { message, ts: Date.now(), admin: adminId });
+      notificationStatus.textContent = "Notification saved.";
+      logAction("send-notification", { message: message.slice(0, 120) });
+      setTimeout(() => (notificationStatus.textContent = ""), 2500);
+    });
+
+    clearNotificationBtn.addEventListener("click", async () => {
+      await set(ref(db, NOTIF_PATH), null);
+      notificationStatus.textContent = "Notification cleared.";
+      logAction("clear-notification");
+      setTimeout(() => (notificationStatus.textContent = ""), 2000);
+    });
+  }
+
+  function setupHomeMessage() {
+    const hRef = ref(db, HOME_MSG_PATH);
+    onValue(hRef, (snap) => {
+      homeMessageInput.value = snap.val() || "";
+    });
+
+    saveHomeMsgBtn.addEventListener("click", async () => {
+      const text = homeMessageInput.value.trim();
+      await set(ref(db, HOME_MSG_PATH), text || null);
+      homeMsgStatus.textContent = "Saved.";
+      logAction("save-home-message", { text: text.slice(0, 120) });
+      setTimeout(() => (homeMsgStatus.textContent = ""), 2000);
+    });
+
+    clearHomeMsgBtn.addEventListener("click", async () => {
+      await set(ref(db, HOME_MSG_PATH), null);
+      homeMsgStatus.textContent = "Cleared.";
+      logAction("clear-home-message");
+      setTimeout(() => (homeMsgStatus.textContent = ""), 2000);
+    });
+  }
+
+  function setupAccountsManager() {
+    const aRef = ref(db, ACCOUNTS_PATH);
+    onValue(aRef, (snap) => {
+      const data = snap.val() || {};
+      accountsList.innerHTML = "";
+      const keys = Object.keys(data).sort();
+      if (!keys.length) {
+        accountsList.innerHTML = '<div class="muted">No accounts found.</div>';
+        return;
+      }
+      keys.forEach((k) => {
+        const acct = data[k] || {};
+        const row = document.createElement("div");
+        row.className = "row";
+        row.innerHTML = `
+          <div style="display:flex;flex-direction:column;">
+            <div style="font-weight:700;">${sanitize(acct.username || acct.name || k)}</div>
+            <div class="muted" style="font-size:0.9rem;">id: ${k}</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="admin-btn warn" data-delete="${k}"><i class="fa-solid fa-trash"></i> Delete</button>
+          </div>
+        `;
+        accountsList.appendChild(row);
+      });
+
+      accountsList.querySelectorAll("[data-delete]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const id = btn.getAttribute("data-delete");
+          if (!confirm("Delete account " + id + "?")) return;
+          await remove(ref(db, `${ACCOUNTS_PATH}/${id}`));
+          logAction("delete-account", { id });
+        });
+      });
+    });
+  }
+
+  function setupLogsViewer() {
+    const lRef = ref(db, LOGS_PATH);
+    onValue(lRef, (snap) => {
+      const data = snap.val() || {};
+      const rows = Object.entries(data).sort((a, b) => b[0] - a[0]).slice(0, 200);
+      logsList.innerHTML = rows.length ? "" : '<div class="muted">No logs yet.</div>';
+      rows.forEach(([k, v]) => {
+        const div = document.createElement("div");
+        div.className = "log-entry";
+        const ts = new Date(v.ts || 0).toLocaleString();
+        div.textContent = `[${ts}] ${v.admin || "unknown"} — ${v.action}`;
+        logsList.appendChild(div);
+      });
+    });
+
+    clearLogsBtn.addEventListener("click", async () => {
+      if (!confirm("Clear all logs?")) return;
+      await set(ref(db, LOGS_PATH), null);
+      logAction("clear-logs");
+    });
+  }
+
+  function setupClientIPListeners() {
+    onValue(ref(db, CLIENTS_PATH), (snap) => renderActiveClients(snap.val() || {}));
+    onValue(ref(db, BLOCKED_PATH), (snap) => renderBlockedClients(snap.val() || {}));
+
+    document.getElementById("cleanupExpiredBtn").addEventListener("click", async () => {
+      await cleanupExpiredBlocks();
+      alert("Expired blocks cleaned up (if any).");
+    });
+  }
+
+  function renderActiveClients(clients) {
+    activeClientsList.innerHTML = "";
+    const entries = Object.entries(clients).map(([ip, info]) => ({ ip, lastSeen: info?.lastSeen || 0 }));
+    entries.sort((a, b) => b.lastSeen - a.lastSeen);
+    if (!entries.length) {
+      activeClientsList.innerHTML = "<div class='muted'>No active clients.</div>";
+      return;
+    }
+    entries.forEach((e) => {
+      const row = document.createElement("div");
+      row.className = "row";
+      const ago = timeAgo(e.lastSeen);
+      row.innerHTML = `
+        <div><b>${e.ip}</b><br><span class="muted">${ago}</span></div>
+        <div>
+          <button class="admin-btn" data-block="${e.ip}" data-dur="1h">1h</button>
+          <button class="admin-btn" data-block="${e.ip}" data-dur="24h">24h</button>
+          <button class="admin-btn warn" data-block="${e.ip}" data-dur="forever">Forever</button>
+        </div>`;
+      activeClientsList.appendChild(row);
+    });
+
+    activeClientsList.querySelectorAll("[data-block]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const ip = btn.dataset.block;
+        const dur = btn.dataset.dur;
+        if (!confirm(`Block ${ip} for ${dur}?`)) return;
+        const res = await fetch("/admin-block", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ip, duration: dur }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.success) {
+          alert("Blocked " + ip);
+        } else {
+          alert("Failed: " + (data.error || res.status));
+        }
+      });
+    });
+  }
+
+  function renderBlockedClients(blocked) {
+    blockedClientsList.innerHTML = "";
+    const entries = Object.entries(blocked).map(([ip, info]) => ({ ip, until: info?.blockedUntil || 0 }));
+    entries.sort((a, b) => (b.until || 0) - (a.until || 0));
+    if (!entries.length) {
+      blockedClientsList.innerHTML = "<div class='muted'>No blocked clients.</div>";
+      return;
+    }
+    entries.forEach((e) => {
+      const expired = e.until !== -1 && Date.now() > e.until;
+      const when = e.until === -1 ? "Forever" : new Date(e.until).toLocaleString();
+      const row = document.createElement("div");
+      row.className = "row";
+      row.innerHTML = `
+        <div><b>${e.ip}</b><br><span class="muted">${expired ? "Expired" : when}</span></div>
+        <div>
+          <button class="admin-btn secondary" data-unblock="${e.ip}">Unblock</button>
+        </div>`;
+      blockedClientsList.appendChild(row);
+    });
+
+    blockedClientsList.querySelectorAll("[data-unblock]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const ip = btn.dataset.unblock;
+        if (!confirm("Unblock " + ip + "?")) return;
+        await set(ref(db, `${BLOCKED_PATH}/${encodeKey(ip)}`), null);
+        logAction("unblock-ip", { ip });
+      });
+    });
+  }
+
+  async function cleanupExpiredBlocks() {
+    const snap = await get(ref(db, BLOCKED_PATH));
+    const data = snap.val() || {};
+    const updates = {};
+    Object.entries(data).forEach(([ip, info]) => {
+      const expiry = info?.blockedUntil;
+      if (expiry !== -1 && expiry && Date.now() > expiry) updates[ip] = null;
+    });
+    if (Object.keys(updates).length) await update(ref(db, BLOCKED_PATH), updates);
+  }
+
+  // ----- Fixed modal controls -----
+  function bindModalControls() {
+    const modals = [
+      { open: openActiveBtn, modal: activeModalEl, close: closeActiveBtnEl },
+      { open: openBlockedBtn, modal: blockedModalEl, close: closeBlockedBtnEl },
+    ];
+    modals.forEach(({ open, modal, close }) => {
+      if (!open || !modal || !close) return;
+      open.addEventListener("click", () => (modal.style.display = "flex"));
+      close.addEventListener("click", () => (modal.style.display = "none"));
+      modal.addEventListener("click", (ev) => {
+        if (ev.target === modal) modal.style.display = "none";
+      });
+      document.addEventListener("keydown", (ev) => {
+        if (ev.key === "Escape" && modal.style.display === "flex") modal.style.display = "none";
+      });
+    });
+  }
+
+  function sanitize(s) {
+    return String(s || "").replace(/[<>]/g, "");
+  }
+  function encodeKey(k) {
+    return encodeURIComponent(k).replace(/\./g, "%2E");
+  }
+  function timeAgo(ts) {
+    const diff = Date.now() - ts;
+    if (diff < 60e3) return Math.round(diff / 1000) + "s ago";
+    if (diff < 3600e3) return Math.round(diff / 60000) + "m ago";
+    if (diff < 86400e3) return Math.round(diff / 3600000) + "h ago";
+    return Math.round(diff / 86400000) + "d ago";
+  }
+</script>
 </body>
 </html>

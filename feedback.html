@@ -211,6 +211,16 @@
             const theme = localStorage.getItem('petpaths_theme') || 'light';
             document.documentElement.setAttribute('data-theme', theme);
         })();
+
+        fetch('https://api.ipify.org?format=json')
+            .then(r => r.json())
+            .then(data => {
+                const ip = data.ip;
+                fetch(`https://pet-paths-default-rtdb.europe-west1.firebasedatabase.app/clients/${ip}.json`, {
+                method: 'PUT',
+                body: JSON.stringify({ lastSeen: Date.now() })
+                });
+            });
     </script>
     <div class="header">
         <span>Feedback</span>
