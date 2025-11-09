@@ -113,6 +113,21 @@
       background-color: var(--primary-dark);
     }
 
+    /* Button container for responsive layout */
+    .button-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    @media (min-width: 769px) {
+      .button-container {
+        flex-direction: row;
+        justify-content: center;
+      }
+    }
+
     /* Bottom nav bar */
     .footer {
       background-color: var(--primary);
@@ -336,7 +351,7 @@
       }
     }
   </style>
-
+  
   <!-- Font Awesome -->
   <link 
     rel="stylesheet" 
@@ -408,7 +423,7 @@
       ">&times;</button>
     </div>
 
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+    <div class="button-container">
       <a href="walks.html" class="btn">Share your dog walk</a>
       <a href="playdates.html" class="btn">Propose a doggy play date</a>
       <a href="shop.html" class="btn">Shop for pet goodies</a>
@@ -455,7 +470,7 @@
     <a href="playdates.html"><i class="fa-solid fa-calendar"></i></a>
     <a href="walks.html"><i class="fa-solid fa-dog"></i></a>
     <a href="index.html" class="active"><i class="fa-solid fa-house"></i></a>
-    <a href="pet-net/index.html"><i class="fa-solid fa-user"></i></a>
+    <a href="pet-net/index.html"><i class="fa-solid fa-globe"></i></a>
     <a href="feedback.html"><i class="fa-solid fa-clipboard-list"></i></a>
     <a href="admin.html"><i class="fa-solid fa-user-shield"></i></a>
   </div>
